@@ -1,5 +1,5 @@
 import { ChakraProvider, Img, Box } from '@chakra-ui/react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 const QuestionWindow = () => {
   const [imageSrc, setImageSrc] = useState('http://192.168.1.237:3030/api/client/getFile/icon.png')
@@ -11,8 +11,8 @@ const QuestionWindow = () => {
       )
       if (response.ok) {
         const data = await response.json()
-        if (data.FileName) {
-          setImageSrc('http://192.168.1.237:3030/api/client/getFile/' + data.FileName)
+        if (data[0].FileName) {
+          setImageSrc('http://192.168.1.237:3030/api/client/getFile/' + data[0].FileName)
         } else {
           console.error('Image URL not found in response')
         }
@@ -23,6 +23,20 @@ const QuestionWindow = () => {
       console.error('Error fetching the question image:', error)
     }
   }
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === 'a') {
+        showQuestion('d1bfdb31-45fc-4fe4-8bf3-4f50e942a400', '2') // 適切なGroupIdとlevelを渡してください
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+
+    // クリーンアップ関数を追加
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [])
 
   return (
     <ChakraProvider>

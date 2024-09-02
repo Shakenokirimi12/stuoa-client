@@ -1,7 +1,7 @@
 import { Button, ChakraProvider, Flex, Text, VStack } from '@chakra-ui/react'
 import { useState } from 'react'
 import postErrror from '../fetcher/errorReporter'
-
+import KanaKeyboard from './HiraganaKeyboard'
 const AnswerWindow = () => {
   const [roomCode, setRoomCode] = useState('A')
   const [difficulty, setDifficulty] = useState('')
@@ -9,6 +9,7 @@ const AnswerWindow = () => {
   const [errorOccured, setErrorState] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const [groupId, setGroupId] = useState('')
+  const [keyboardMode, setKeyboardMode] = useState(null) // キーボードモードのState
 
   const fetchRoomData = async () => {
     try {
@@ -33,22 +34,18 @@ const AnswerWindow = () => {
         setDifficulty(data[0].Difficulty)
         setGroupName(data[0].GroupName)
         setGroupId(data[0].GroupId)
-        {
-          /*}
-        const message = JSON.stringify({
-          action: 'startGame',
-          difficulty: difficulty,
-          groupId: groupId
-        })
-        window.myAPI.sendMessage('message-to-question-window', message)
-        */
-        }
+        setKeyboardMode('hiragana') // キーボードモードを「ひらがな」に設定
       }
     } catch (error) {
       console.error('Failed to fetch room data:', error)
       setErrorState(true)
       setErrorMessage('データの取得に失敗しました。もう一度お試しください。' + error)
     }
+  }
+
+  const handleKeyPress = (key) => {
+    console.log('Key pressed:', key)
+    // 必要に応じて、キーが押されたときの処理をここに追加
   }
 
   return (
@@ -61,25 +58,31 @@ const AnswerWindow = () => {
         padding="4"
         bg="gray.100"
       >
-        <VStack>
-          <Button
-            size="lg"
-            fontSize="2xl"
-            width="300px"
-            height="100px"
-            colorScheme="blue"
-            borderRadius="md"
-            _hover={{ bg: 'blue.600' }}
-            onClick={fetchRoomData}
-          >
-            ログイン
-          </Button>
-          {errorOccured ? (
-            <Text color="red.500" dangerouslySetInnerHTML={{ __html: errorMessage }} />
-          ) : (
-            <Text>{`${roomCode} ${difficulty} ${groupName}`}</Text>
-          )}
-        </VStack>
+        {keyboardMode === null && (
+          <VStack>
+            <Button
+              size="lg"
+              fontSize="2xl"
+              width="300px"
+              height="100px"
+              colorScheme="blue"
+              borderRadius="md"
+              _hover={{ bg: 'blue.600' }}
+              onClick={fetchRoomData}
+            >
+              ログイン
+            </Button>
+            {errorOccured ? (
+              <Text color="red.500" dangerouslySetInnerHTML={{ __html: errorMessage }} />
+            ) : (
+              <Text>{`${roomCode} ${difficulty} ${groupName}`}</Text>
+            )}
+          </VStack>
+        )}
+
+        {keyboardMode === 'hiragana' && <KanaKeyboard onKeyPress={handleKeyPress} />}
+
+        {keyboardMode === 'blank' && <Flex height="100%" width="100%" bg="white" />}
       </Flex>
     </ChakraProvider>
   )

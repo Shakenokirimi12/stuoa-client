@@ -1,4 +1,4 @@
-import { ChakraProvider, Img, Box, VStack, Button } from '@chakra-ui/react'
+import { ChakraProvider, Img, Box, VStack } from '@chakra-ui/react'
 import { useState, useEffect, useRef } from 'react'
 
 const InstructionWindow = () => {
@@ -13,18 +13,42 @@ const InstructionWindow = () => {
     setShowState('video') // Ensure that the video is set to be shown
   }
 
-  // Handle video playback when videoId changes
+  // Handle video playback when videoId or instructionState changes
   useEffect(() => {
     if (videoRef.current) {
       videoRef.current.load()
       videoRef.current.play()
     }
-  }, [videoId])
+  }, [videoId, instructionState])
 
   // Handle state change when countdown video ends
   const onCountDownEnded = () => {
     // Add logic for what happens when the countdown video ends
   }
+
+  const onAnswerSubmitted = (correct) => {
+    if (correct) {
+      setInstructionState('correct')
+    } else {
+      setInstructionState('wrong')
+    }
+  }
+
+  //! for debbuging
+  // Add a keydown event listener when showState is 'video'
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === 'a') {
+        onAnswerSubmitted(true)
+      } else if (event.key === 'b') {
+        onAnswerSubmitted(false)
+      } else if (event.key === 'c') {
+        updateVideo('5', '2')
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+  }, [showState])
+  //! for debbuging
 
   // Conditional rendering based on showState
   return (
@@ -37,7 +61,6 @@ const InstructionWindow = () => {
             maxHeight="100%"
             objectFit="contain"
           />
-          <Button onClick={() => updateVideo('5', '2')}>Start video</Button>
         </Box>
       ) : showState === 'video' ? (
         <VStack>
@@ -94,7 +117,7 @@ const InstructionWindow = () => {
         </VStack>
       ) : (
         <VStack>
-          <Box display="flex" justifyContent="center" alignItems="center" height="75vh">
+          <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
             <video
               ref={videoRef}
               width="100%"
@@ -104,15 +127,6 @@ const InstructionWindow = () => {
             >
               <source
                 src={`http://192.168.1.237:3030/api/client/getFile/exit_right.mp4`}
-                type="video/mp4"
-              />
-              Your browser does not support the video tag.
-            </video>
-          </Box>
-          <Box display="flex" justifyContent="center" alignItems="center" height="25vh">
-            <video width="100%" height="100%" autoPlay>
-              <source
-                src="http://192.168.1.237:3030/api/client/getFile/countdown.mp4"
                 type="video/mp4"
               />
               Your browser does not support the video tag.
