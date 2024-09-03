@@ -15,7 +15,6 @@ const AnswerWindow = () => {
   useEffect(() => {
     const fetchServerIP = async () => {
       try {
-        console.log(window.globalVariableHandler.getSharedData)
         const ip = await window.globalVariableHandler.getSharedData('server_IP')
         console.log(ip)
         setServerIP(ip)
