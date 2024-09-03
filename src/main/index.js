@@ -12,7 +12,6 @@ function createWindow() {
     width: 900,
     height: 670,
     show: false,
-    autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
@@ -54,7 +53,11 @@ app.whenReady().then(() => {
       instructionWindow = new BrowserWindow({
         title: 'Instruction Window',
         fullscreen: true,
-        frame: false
+        frame: false,
+        webPreferences: {
+          preload: join(__dirname, '../preload/index.js'),
+          sandbox: false
+        }
       })
       instructionWindow.on('ready-to-show', () => {
         instructionWindow.show()
@@ -72,7 +75,11 @@ app.whenReady().then(() => {
       answerWindow = new BrowserWindow({
         title: 'Answer Window',
         fullscreen: true,
-        frame: false
+        frame: false,
+        webPreferences: {
+          preload: join(__dirname, '../preload/index.js'),
+          sandbox: false
+        }
       })
       answerWindow.on('ready-to-show', () => {
         answerWindow.show()
@@ -88,7 +95,11 @@ app.whenReady().then(() => {
   ipcMain.handle('open-question-window', () => {
     if (!questionWindow || questionWindow.isDestroyed()) {
       questionWindow = new BrowserWindow({
-        title: 'Question Window'
+        title: 'Question Window',
+        webPreferences: {
+          preload: join(__dirname, '../preload/index.js'),
+          sandbox: false
+        }
       })
       questionWindow.on('ready-to-show', () => {
         questionWindow.show()
@@ -122,7 +133,11 @@ app.whenReady().then(() => {
       questionWindow = new BrowserWindow({
         modal: true,
         width: 200,
-        height: 200
+        height: 200,
+        webPreferences: {
+          preload: join(__dirname, '../preload/index.js'),
+          sandbox: false
+        }
       })
       if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
         questionWindow.loadURL(process.env['ELECTRON_RENDERER_URL'] + '/#/connection_checker')

@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react'
 
 const InstructionWindow = () => {
   const [showState, setShowState] = useState('icon')
-  const [videoId, setVideoId] = useState('_5_1')
+  const [videoId, setVideoId] = useState('_5_5')
   const [instructionState, setInstructionState] = useState('lastQuestion')
   const videoRef = useRef(null)
 
@@ -53,7 +53,7 @@ const InstructionWindow = () => {
       } else if (event.key === 'b') {
         onAnswerSubmitted(false)
       } else if (event.key === 'c') {
-        updateVideo('5', '2')
+        updateVideo('5', '5')
       }
     }
     window.addEventListener('keydown', handleKeyDown)
