@@ -13,7 +13,7 @@ const AnswerWindow = () => {
 
   const fetchRoomData = async () => {
     try {
-      const response = await fetch(`http://192.168.1.237:3030/api/client/currentroom/${roomCode}`)
+      const response = await fetch(`http://${serverIP}/api/client/currentroom/${roomCode}`)
       if (!response.ok) {
         throw new Error('Network response was not ok')
       }

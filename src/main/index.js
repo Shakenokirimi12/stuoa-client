@@ -102,6 +102,7 @@ app.whenReady().then(() => {
     }
     ;``
   })
+
   ipcMain.handle('show-screen-numbers', () => {
     if (!questionWindow || questionWindow.isDestroyed()) {
       questionWindow = new BrowserWindow({})
@@ -132,6 +133,18 @@ app.whenReady().then(() => {
     questionWindow.on('ready-to-show', () => {
       questionWindow.show()
     })
+  })
+
+  let sharedData = {}
+
+  // Handler to set data
+  ipcMain.handle('set-shared-data', (event, key, value) => {
+    sharedData[key] = value
+  })
+
+  // Handler to get data
+  ipcMain.handle('get-shared-data', (event, key) => {
+    return sharedData[key]
   })
 })
 

@@ -21,6 +21,16 @@ const InstructionWindow = () => {
     }
   }, [videoId, instructionState])
 
+  const [serverIP, setServerIP] = useState('')
+
+  useEffect(() => {
+    const fetchServerIP = async () => {
+      const ip = await window.globalVariableHandler.getSharedData('server_IP')
+      setServerIP(ip)
+    }
+    fetchServerIP()
+  }, [])
+
   // Handle state change when countdown video ends
   const onCountDownEnded = () => {
     // Add logic for what happens when the countdown video ends
@@ -56,7 +66,7 @@ const InstructionWindow = () => {
       {showState === 'icon' ? (
         <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
           <Img
-            src="http://192.168.1.237:3030/api/client/getFile/icon.png"
+            src={`http://${serverIP}/api/client/getFile/icon.png`}
             maxWidth="100%"
             maxHeight="100%"
             objectFit="contain"
@@ -69,7 +79,7 @@ const InstructionWindow = () => {
               <>
                 <video ref={videoRef} width="100%" height="100%" autoPlay>
                   <source
-                    src={`http://192.168.1.237:3030/api/client/getFile/last${videoId}.mp4`}
+                    src={`http://${serverIP}/api/client/getFile/last${videoId}.mp4`}
                     type="video/mp4"
                   />
                   Your browser does not support the video tag.
@@ -84,7 +94,7 @@ const InstructionWindow = () => {
                 onEnded={() => setInstructionState('lastQuestion')}
               >
                 <source
-                  src={`http://192.168.1.237:3030/api/client/getFile/correct.mp4`}
+                  src={`http://${serverIP}/api/client/getFile/correct.mp4`}
                   type="video/mp4"
                 />
                 Your browser does not support the video tag.
@@ -97,10 +107,7 @@ const InstructionWindow = () => {
                 autoPlay
                 onEnded={() => setInstructionState('lastQuestion')}
               >
-                <source
-                  src={`http://192.168.1.237:3030/api/client/getFile/wrong.mp4`}
-                  type="video/mp4"
-                />
+                <source src={`http://${serverIP}/api/client/getFile/wrong.mp4`} type="video/mp4" />
                 Your browser does not support the video tag.
               </video>
             )}
@@ -108,7 +115,7 @@ const InstructionWindow = () => {
           <Box display="flex" justifyContent="center" alignItems="center" height="25vh">
             <video width="100%" height="100%" autoPlay onEnded={onCountDownEnded}>
               <source
-                src="http://192.168.1.237:3030/api/client/getFile/countdown.mp4"
+                src={`http://${serverIP}/api/client/getFile/countdown.mp4`}
                 type="video/mp4"
               />
               Your browser does not support the video tag.
@@ -126,7 +133,7 @@ const InstructionWindow = () => {
               onEnded={() => setShowState('icon')}
             >
               <source
-                src={`http://192.168.1.237:3030/api/client/getFile/exit_right.mp4`}
+                src={`http://${serverIP}/api/client/getFile/exit_right.mp4`}
                 type="video/mp4"
               />
               Your browser does not support the video tag.

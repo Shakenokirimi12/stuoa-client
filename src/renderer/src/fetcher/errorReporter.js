@@ -1,6 +1,7 @@
 const postError = async (errorMessage, errorLocation) => {
   try {
-    const response = await fetch(`http://192.168.1.237:3030/api/client/errorReport`, {
+    const serverIP = await window.globalVariableHandler.getSharedData('server_IP')
+    const response = await fetch(`http://${serverIP}/api/client/errorReport`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

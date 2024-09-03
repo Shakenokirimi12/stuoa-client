@@ -2,17 +2,26 @@ import { ChakraProvider, Img, Box } from '@chakra-ui/react'
 import { useEffect, useState } from 'react'
 
 const QuestionWindow = () => {
-  const [imageSrc, setImageSrc] = useState('http://192.168.1.237:3030/api/client/getFile/icon.png')
+  const [imageSrc, setImageSrc] = useState(`http://${serverIP}/api/client/getFile/icon.png`)
+
+  const [serverIP, setServerIP] = useState('')
+
+  useEffect(() => {
+    const fetchServerIP = async () => {
+      const ip = await window.globalVariableHandler.getSharedData('server_IP')
+      setServerIP(ip)
+    }
+    fetchServerIP()
+  }, [])
 
   const showQuestion = async (GroupId, level) => {
     try {
-      const response = await fetch(
-        `http://192.168.1.237:3030/api/client/${GroupId}/getQuestion/${level}`
-      )
+      const response = await fetch(`http://${serverIP}/api/client/${GroupId}/getQuestion/${level}`)
       if (response.ok) {
         const data = await response.json()
+        //? set current question value
         if (data[0].FileName) {
-          setImageSrc('http://192.168.1.237:3030/api/client/getFile/' + data[0].FileName)
+          setImageSrc(`http://${serverIP}/api/client/getFile/` + data[0].FileName)
         } else {
           console.error('Image URL not found in response')
         }

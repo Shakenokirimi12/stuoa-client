@@ -27,3 +27,12 @@ contextBridge.exposeInMainWorld('myAPI', {
   showScreenNumbers: () => ipcRenderer.invoke('show-screen-numbers'),
   showConnectionChecker: () => ipcRenderer.invoke('server-connection-checker')
 })
+
+contextBridge.exposeInMainWorld('globalVariableHandler', {
+  setSharedData: async (key, value) => {
+    await ipcRenderer.invoke('set-shared-data', key, value)
+  },
+  getSharedData: async (key) => {
+    return await ipcRenderer.invoke('get-shared-data', key)
+  }
+})

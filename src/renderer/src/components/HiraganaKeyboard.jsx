@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Button, Grid, Input, VStack, HStack, useBreakpointValue } from '@chakra-ui/react'
+import { useState, useEffect } from 'react'
+import { Button, Grid, Input, VStack, HStack } from '@chakra-ui/react'
 
 const kanaList = [
   ['あ', 'い', 'う', 'え', 'お'],
@@ -60,8 +60,16 @@ const handakutenMap = {
 
 const KanaKeyboard = () => {
   const [inputText, setInputText] = useState('')
-  const buttonSize = useBreakpointValue({ base: '4rem', md: 'auto' })
   const maxLength = 10
+  const [serverIP, setServerIP] = useState('')
+
+  useEffect(() => {
+    const fetchServerIP = async () => {
+      const ip = await window.globalVariableHandler.getSharedData('server_IP')
+      setServerIP(ip)
+    }
+    fetchServerIP()
+  }, [])
 
   const handleKanaClick = (char) => {
     setInputText((prev) => (prev.length < maxLength ? prev + char : prev))
@@ -97,9 +105,9 @@ const KanaKeyboard = () => {
 
   const handleSubmit = async () => {
     let currentQuestionId = 'lv1_q1'
-    const response =
-      await fetch(`http://192.168.1.237:3030/api/client/getQuestionById/${currentQuestionId};
-    }`)
+    const response = await fetch(
+      `http://${serverIP}/api/client/getQuestionById/${currentQuestionId}`
+    )
     if (!response.ok) {
       throw new Error('Network response was not ok')
     }
