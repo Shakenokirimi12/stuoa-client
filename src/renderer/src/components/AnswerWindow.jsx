@@ -1,5 +1,5 @@
 import { Button, ChakraProvider, Flex, Text, VStack } from '@chakra-ui/react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import postErrror from '../fetcher/errorReporter'
 import KanaKeyboard from './HiraganaKeyboard'
 const AnswerWindow = () => {
@@ -10,6 +10,21 @@ const AnswerWindow = () => {
   const [errorMessage, setErrorMessage] = useState('')
   const [groupId, setGroupId] = useState('')
   const [keyboardMode, setKeyboardMode] = useState(null) // キーボードモードのState
+
+  const [serverIP, setServerIP] = useState('')
+  useEffect(() => {
+    const fetchServerIP = async () => {
+      try {
+        console.log(window.globalVariableHandler.getSharedData)
+        const ip = await window.globalVariableHandler.getSharedData('server_IP')
+        console.log(ip)
+        setServerIP(ip)
+      } catch (error) {
+        console.error('Failed to fetch server IP:', error)
+      }
+    }
+    fetchServerIP()
+  }, [])
 
   const fetchRoomData = async () => {
     try {
