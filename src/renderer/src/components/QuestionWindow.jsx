@@ -21,6 +21,12 @@ const QuestionWindow = () => {
         const data = await response.json()
         if (data[0].FileName) {
           setImageSrc(`http://${serverIP}/api/client/getFile/` + data[0].FileName)
+          await window.globalVariableHandler.setSharedData('currentQuestionId', data[0].ID)
+          await window.globalVariableHandler.setSharedData('currentQuestionAnswer', data[0].Answer)
+          await window.globalVariableHandler.setSharedData(
+            'currentQuestionAnswerType',
+            data[0].Type
+          )
         } else {
           console.error('Image URL not found in response')
         }
@@ -33,9 +39,12 @@ const QuestionWindow = () => {
   }
 
   useEffect(() => {
-    const handleKeyDown = (event) => {
+    const handleKeyDown = async (event) => {
       if (event.key === 'a') {
-        showQuestion('d1bfdb31-45fc-4fe4-8bf3-4f50e942a400', '2')
+        let currentGroupId = await window.globalVariableHandler.getSharedData('currentGroupId')
+        let currentGroupDifficulty =
+          await window.globalVariableHandler.getSharedData('currentGroupDifficulty')
+        showQuestion(currentGroupId, currentGroupDifficulty)
       }
     }
     window.addEventListener('keydown', handleKeyDown)
@@ -47,12 +56,18 @@ const QuestionWindow = () => {
 
   return (
     <ChakraProvider>
-      <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height="100vh"
+        width={'100vw'}
+      >
         <Img
-          src={imageSrc || '/fallback-image.png'}
-          maxWidth="100%"
-          maxHeight="100%"
-          objectFit="contain"
+          src={imageSrc}
+          objectFit="contain" // Ensures the image maintains its aspect ratio within the container
+          width="100vw" // Allows the image to scale up or down depending on its original size
+          height="100vh"
         />
       </Box>
     </ChakraProvider>

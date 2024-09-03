@@ -15,28 +15,31 @@ const ControlPanel = () => {
   const [instructionWindowDisplay, setInstructionWindowDisplay] = useState('Display 1')
   const [answerWindowDisplay, setAnswerWindowDisplay] = useState('Display 1')
   const [questionWindowDisplay, setQuestionWindowDisplay] = useState('Display 1')
+  const [isServerSet, setIsServerSet] = useState(false)
+  const [isConnected, setIsConnected] = useState(false)
 
   const openInstructionWindow = () => window.myAPI.openInstructionWindow(instructionWindowDisplay)
   const openAnswerWindow = () => window.myAPI.openAnswerWindow(answerWindowDisplay)
   const openQuestionWindow = () => window.myAPI.openQuestionWindow(questionWindowDisplay)
   const showScreenNumbers = () => window.myAPI.showScreenNumbers()
-  const showConnectionChecker = () => window.myAPI.showConnectionChecker()
+
+  const showConnectionChecker = async () => {
+    try {
+      await window.myAPI.showConnectionChecker()
+      setIsConnected(true) // Assuming connection check is successful
+    } catch (error) {
+      console.error('Failed to check server connection:', error)
+    }
+  }
+
   const registerServerIP = async () => {
-    console.log('Settng sever ip..')
+    console.log('Setting server IP...')
     try {
       await window.globalVariableHandler.setSharedData('server_IP', serverIP)
+      setIsServerSet(true)
     } catch (error) {
       console.error('Error updating server IP:', error)
     }
-    const fetchServerIP = async () => {
-      try {
-        const ip = await window.globalVariableHandler.getSharedData('server_IP')
-        console.log(ip)
-      } catch (error) {
-        console.error('Failed to fetch server IP:', error)
-      }
-    }
-    fetchServerIP()
   }
 
   return (
@@ -61,16 +64,30 @@ const ControlPanel = () => {
                 Set Server IP
               </Button>
             </HStack>
-            <Button colorScheme="blue" size="lg" variant="solid" onClick={showConnectionChecker}>
+            <Button
+              colorScheme="blue"
+              size="lg"
+              variant="solid"
+              onClick={showConnectionChecker}
+              isDisabled={!isServerSet}
+            >
               Check Server Connection
             </Button>
             <HStack w="full">
-              <Button colorScheme="teal" size="lg" variant="solid" onClick={openInstructionWindow}>
+              <Button
+                colorScheme="teal"
+                size="lg"
+                variant="solid"
+                onClick={openInstructionWindow}
+                isDisabled={!isConnected}
+                w={'500px'}
+              >
                 Open Instruction Window
               </Button>
               <Select
                 value={instructionWindowDisplay}
                 onChange={(e) => setInstructionWindowDisplay(e.target.value)}
+                disabled={!isConnected}
               >
                 <option value="Display 1">Display 1</option>
                 <option value="Display 2">Display 2</option>
@@ -80,12 +97,20 @@ const ControlPanel = () => {
             </HStack>
 
             <HStack w="full">
-              <Button colorScheme="teal" size="lg" variant="solid" onClick={openAnswerWindow}>
+              <Button
+                colorScheme="teal"
+                size="lg"
+                variant="solid"
+                onClick={openAnswerWindow}
+                isDisabled={!isConnected}
+                w={'500px'}
+              >
                 Open Answer Window
               </Button>
               <Select
                 value={answerWindowDisplay}
                 onChange={(e) => setAnswerWindowDisplay(e.target.value)}
+                disabled={!isConnected}
               >
                 <option value="Display 1">Display 1</option>
                 <option value="Display 2">Display 2</option>
@@ -95,12 +120,20 @@ const ControlPanel = () => {
             </HStack>
 
             <HStack w="full">
-              <Button colorScheme="teal" size="lg" variant="solid" onClick={openQuestionWindow}>
+              <Button
+                colorScheme="teal"
+                size="lg"
+                variant="solid"
+                onClick={openQuestionWindow}
+                isDisabled={!isConnected}
+                w={'500px'}
+              >
                 Open Question Window
               </Button>
               <Select
                 value={questionWindowDisplay}
                 onChange={(e) => setQuestionWindowDisplay(e.target.value)}
+                disabled={!isConnected}
               >
                 <option value="Display 1">Display 1</option>
                 <option value="Display 2">Display 2</option>
@@ -108,8 +141,13 @@ const ControlPanel = () => {
                 <option value="Display 4">Display 4</option>
               </Select>
             </HStack>
-
-            <Button colorScheme="orange" size="lg" variant="solid" onClick={showScreenNumbers}>
+            <Button
+              colorScheme="orange"
+              size="lg"
+              variant="solid"
+              onClick={showScreenNumbers}
+              isDisabled={!isConnected}
+            >
               Show Screen Numbers
             </Button>
           </VStack>

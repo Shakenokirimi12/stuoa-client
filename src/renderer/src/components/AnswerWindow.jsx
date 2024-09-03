@@ -2,6 +2,7 @@ import { Button, ChakraProvider, Flex, Text, VStack } from '@chakra-ui/react'
 import { useEffect, useState } from 'react'
 import postErrror from '../fetcher/errorReporter'
 import KanaKeyboard from './HiraganaKeyboard'
+import AlphabetKeyboard from './AlphabetKeyboard'
 const AnswerWindow = () => {
   const [roomCode, setRoomCode] = useState('A')
   const [difficulty, setDifficulty] = useState('')
@@ -46,9 +47,34 @@ const AnswerWindow = () => {
       } else {
         setErrorState(false)
         setDifficulty(data[0].Difficulty)
+        await window.globalVariableHandler.setSharedData(
+          'currentGroupDifficulty',
+          data[0].Difficulty
+        )
         setGroupName(data[0].GroupName)
+        await window.globalVariableHandler.setSharedData('currentGroupName', data[0].GroupName)
         setGroupId(data[0].GroupId)
-        setKeyboardMode('hiragana') // キーボードモードを「ひらがな」に設定
+        await window.globalVariableHandler.setSharedData('currentGroupId', data[0].GroupId)
+        let questionCount, clearQuestionCount
+        if (data[0].Difficulty == 4) {
+          questionCount = 1
+          clearQuestionCount = 1
+        } else if (data[0].Difficulty == 3) {
+          questionCount = 6
+          clearQuestionCount = 5
+        } else if (data[0].Difficulty == 2) {
+          questionCount = 7
+          clearQuestionCount = 5
+        } else if (data[0].Difficulty == 1) {
+          questionCount = 7
+          clearQuestionCount = 4
+        }
+        await window.globalVariableHandler.setSharedData('currentLastQuestion', questionCount)
+        await window.globalVariableHandler.setSharedData(
+          'currentLastQuestionToClear',
+          clearQuestionCount
+        )
+        setKeyboardMode('blank')
       }
     } catch (error) {
       console.error('Failed to fetch room data:', error)
@@ -56,10 +82,29 @@ const AnswerWindow = () => {
       setErrorMessage('データの取得に失敗しました。もう一度お試しください。' + error)
     }
   }
+  useEffect(() => {
+    const handleKeyDown = async (event) => {
+      if (event.key === 'a') {
+        let currentKeyboardType = await window.globalVariableHandler.getSharedData(
+          'currentQuestionAnswerType'
+        )
+        setKeyboardMode(currentKeyboardType)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [])
 
   const handleKeyPress = (key) => {
     console.log('Key pressed:', key)
     // 必要に応じて、キーが押されたときの処理をここに追加
+  }
+
+  const handleSubmissionComplete = () => {
+    setKeyboardMode('blank')
   }
 
   return (
@@ -94,7 +139,15 @@ const AnswerWindow = () => {
           </VStack>
         )}
 
-        {keyboardMode === 'hiragana' && <KanaKeyboard onKeyPress={handleKeyPress} />}
+        {keyboardMode === 'hiragana' && (
+          <KanaKeyboard onKeyPress={handleKeyPress} onSubmitComplete={handleSubmissionComplete} />
+        )}
+        {keyboardMode === 'alphabet' && (
+          <AlphabetKeyboard
+            onKeyPress={handleKeyPress}
+            onSubmitComplete={handleSubmissionComplete}
+          />
+        )}
 
         {keyboardMode === 'blank' && <Flex height="100%" width="100%" bg="white" />}
       </Flex>

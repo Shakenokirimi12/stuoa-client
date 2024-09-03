@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react'
 
 const InstructionWindow = () => {
   const [showState, setShowState] = useState('icon')
-  const [videoId, setVideoId] = useState('_5_5')
+  const [videoId, setVideoId] = useState()
   const [instructionState, setInstructionState] = useState('lastQuestion')
   const videoRef = useRef(null)
 
@@ -47,13 +47,18 @@ const InstructionWindow = () => {
   //! for debbuging
   // Add a keydown event listener when showState is 'video'
   useEffect(() => {
-    const handleKeyDown = (event) => {
+    const handleKeyDown = async (event) => {
       if (event.key === 'a') {
         onAnswerSubmitted(true)
       } else if (event.key === 'b') {
         onAnswerSubmitted(false)
       } else if (event.key === 'c') {
-        updateVideo('5', '5')
+        let currentLastQuestion =
+          await window.globalVariableHandler.setSharedData('currentLastQuestion')
+        let currentLastQuestionToClear = await window.globalVariableHandler.setSharedData(
+          'currentLastQuestionToClear'
+        )
+        updateVideo(currentLastQuestion, currentLastQuestionToClear)
       }
     }
     window.addEventListener('keydown', handleKeyDown)
@@ -77,7 +82,16 @@ const InstructionWindow = () => {
           <Box display="flex" justifyContent="center" alignItems="center" height="75vh">
             {instructionState === 'lastQuestion' ? (
               <>
-                <video ref={videoRef} width="100%" height="100%" autoPlay>
+                <video
+                  ref={videoRef}
+                  width="100%"
+                  height="100%"
+                  autoPlay
+                  onEnded={() => {
+                    videoRef.current.pause()
+                    videoRef.current.currentTime = videoRef.current.duration - 0.1 // 最後のフレームで停止
+                  }}
+                >
                   <source
                     src={`http://${serverIP}/api/client/getFile/last${videoId}.mp4`}
                     type="video/mp4"

@@ -1,5 +1,18 @@
 import { useState, useEffect } from 'react'
-import { Button, Grid, Input, VStack, HStack } from '@chakra-ui/react'
+import {
+  Button,
+  Grid,
+  Input,
+  VStack,
+  HStack,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalBody,
+  ModalFooter,
+  useDisclosure,
+  Text
+} from '@chakra-ui/react'
 
 const kanaList = [
   ['あ', 'い', 'う', 'え', 'お'],
@@ -58,10 +71,12 @@ const handakutenMap = {
   ほ: 'ぽ'
 }
 
-const KanaKeyboard = () => {
+// eslint-disable-next-line react/prop-types
+const KanaKeyboard = ({ onSubmitComplete }) => {
   const [inputText, setInputText] = useState('')
   const maxLength = 10
   const [serverIP, setServerIP] = useState('')
+  const { isOpen, onOpen, onClose } = useDisclosure()
 
   useEffect(() => {
     const fetchServerIP = async () => {
@@ -104,24 +119,63 @@ const KanaKeyboard = () => {
   }
 
   const handleSubmit = async () => {
-    let currentQuestionId = 'lv1_q1'
-    const response = await fetch(
-      `http://${serverIP}/api/client/getQuestionById/${currentQuestionId}`
-    )
-    if (!response.ok) {
-      throw new Error('Network response was not ok')
-    }
-    const data = await response.json()
-    let ans = data.Answer
-    if (ans == inputText) {
-      //! put code into this range to update the data and inst window
-    } else {
-      //! put code into this range to update the data and inst window
-    }
-    //TODO: Update the database stats and update the question and clear number.
-    //TODO: The API does not provide the data of how much questions have answered. So, You have to save it to local data, or make API endpoint and alter database to do so.
-  }
+    let ans = await window.globalVariableHandler.getSharedData('currentQuestionAnswer')
 
+    let currentQuestionId = await window.globalVariableHandler.getSharedData('currentQuestionId')
+    let currentGroupId = await window.globalVariableHandler.getSharedData('currentGroupId')
+    let result = ans === inputText ? 'Collect' : 'Wrong'
+
+    const data = {
+      GroupId: currentGroupId,
+      QuestionId: currentQuestionId,
+      Result: result, // 'Collect' or 'Wrong'
+      ChallengerAnswer: inputText
+    }
+
+    try {
+      const response = await fetch(`http://${serverIP}/api/client/answer/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      })
+
+      const resultData = await response.json()
+      if (resultData.success) {
+        console.log('Success:', resultData.message)
+      } else {
+        console.error('Error:', resultData.message)
+      }
+    } catch (error) {
+      console.error('Network error:', error)
+    }
+
+    let currentLastQuestion =
+      await window.globalVariableHandler.getSharedData('currentLastQuestion')
+    await window.globalVariableHandler.setSharedData('currentLastQuestion', currentLastQuestion - 1)
+
+    if (result === 'Collect') {
+      let currentLastQuestionToClear = await window.globalVariableHandler.getSharedData(
+        'currentLastQuestionToClear'
+      )
+      await window.globalVariableHandler.setSharedData(
+        'currentLastQuestionToClear',
+        currentLastQuestionToClear - 1
+      )
+    }
+  }
+  const confirmSubmit = async () => {
+    try {
+      await handleSubmit()
+      onClose() // Close the modal after successful submission
+      if (onSubmitComplete) {
+        onSubmitComplete() // Notify the parent component
+      }
+    } catch (error) {
+      console.error('Submission error:', error)
+    }
+  }
   return (
     <VStack h="100vh" w="100vw" p={4} spacing={4}>
       <Input
@@ -137,26 +191,39 @@ const KanaKeyboard = () => {
       />
 
       <HStack w="full" h="full" spacing={5} alignItems="flex-start">
-        <Grid templateColumns={`repeat(${kanaList.length}, 1fr)`} gap={2} w="70%" h="full">
+        <Grid templateColumns={`repeat(${kanaList.length}, 1fr)`} gap={2} w="85%" h="full">
           {kanaList.map((column, index) => (
             <VStack key={index} spacing={2} h="full">
-              {column.map((char) => (
-                <Button
-                  key={char}
-                  fontSize="60px"
-                  onClick={() => handleKanaClick(char)}
-                  colorScheme="teal"
-                  h="full"
-                  w="full"
-                >
-                  {char}
-                </Button>
-              ))}
+              {column.map((char, charIndex) =>
+                char === '' ? (
+                  <Button
+                    key={`empty-${index}-${charIndex}-${index}-${charIndex}`}
+                    colorScheme="gray"
+                    fontSize="60px"
+                    h="full"
+                    w="full"
+                    isDisabled
+                  >
+                    {char}
+                  </Button>
+                ) : (
+                  <Button
+                    key={`kana-${char}-${index}-${charIndex}-${index}-${charIndex}`}
+                    colorScheme="teal"
+                    fontSize="60px"
+                    onClick={() => handleKanaClick(char)}
+                    h="full"
+                    w="full"
+                  >
+                    {char}
+                  </Button>
+                )
+              )}
             </VStack>
           ))}
         </Grid>
 
-        <VStack w="30%" h="full" spacing={2}>
+        <VStack w="15%" h="full" spacing={2}>
           <Button colorScheme="blue" onClick={handleSmallKana} h="full" w="full" fontSize={'40px'}>
             小文字
           </Button>
@@ -172,11 +239,36 @@ const KanaKeyboard = () => {
           <Button colorScheme="yellow" onClick={handleClear} h="full" w="full" fontSize={'40px'}>
             すべて消す
           </Button>
-          <Button colorScheme="green" onClick={handleSubmit} h="full" w="full" fontSize={'40px'}>
+          <Button colorScheme="green" onClick={onOpen} h="full" w="full" fontSize={'40px'}>
             送信
           </Button>
         </VStack>
       </HStack>
+
+      <Modal isOpen={isOpen} onClose={onClose} size="lg">
+        <ModalOverlay />
+        <ModalContent maxW="90vw" maxH="90vh" margin="auto" p={6} textAlign="center">
+          <ModalBody>
+            <Text fontSize="75px">送信しますか？</Text>
+            <Text fontSize="60px">入力内容: {inputText}</Text>
+          </ModalBody>
+          <ModalFooter justifyContent="center">
+            <Button
+              colorScheme="blue"
+              mr={3}
+              fontSize="50px"
+              w={'150px'}
+              h={'100px'}
+              onClick={confirmSubmit}
+            >
+              はい
+            </Button>
+            <Button variant="outline" fontSize="50px" w={'150px'} h={'100px'} onClick={onClose}>
+              いいえ
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </VStack>
   )
 }

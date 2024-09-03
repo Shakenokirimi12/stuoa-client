@@ -96,6 +96,8 @@ app.whenReady().then(() => {
     if (!questionWindow || questionWindow.isDestroyed()) {
       questionWindow = new BrowserWindow({
         title: 'Question Window',
+        fullscreen: true,
+        frame: false,
         webPreferences: {
           preload: join(__dirname, '../preload/index.js'),
           sandbox: false
@@ -139,6 +141,8 @@ app.whenReady().then(() => {
           sandbox: false
         }
       })
+      questionWindow.setAlwaysOnTop(true, 'screen-saver') // 常に最前面に表示する
+      questionWindow.setVisibleOnAllWorkspaces(true)
       if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
         questionWindow.loadURL(process.env['ELECTRON_RENDERER_URL'] + '/#/connection_checker')
       } else {
