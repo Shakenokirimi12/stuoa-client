@@ -53,8 +53,6 @@ app.whenReady().then(() => {
     if (!instructionWindow || instructionWindow.isDestroyed()) {
       instructionWindow = new BrowserWindow({
         title: 'Instruction Window',
-        fullscreen: true,
-        frame: false,
         webPreferences: {
           preload: join(__dirname, '..', 'preload', 'index.js'),
           sandbox: false
@@ -76,8 +74,7 @@ app.whenReady().then(() => {
     if (!answerWindow || answerWindow.isDestroyed()) {
       answerWindow = new BrowserWindow({
         title: 'Answer Window',
-        fullscreen: true,
-        frame: false,
+
         webPreferences: {
           preload: join(__dirname, '..', 'preload', 'index.js'),
           sandbox: false
@@ -99,8 +96,6 @@ app.whenReady().then(() => {
     if (!questionWindow || questionWindow.isDestroyed()) {
       questionWindow = new BrowserWindow({
         title: 'Question Window',
-        fullscreen: true,
-        frame: false,
         webPreferences: {
           preload: join(__dirname, '..', 'preload', 'index.js'),
           sandbox: false
