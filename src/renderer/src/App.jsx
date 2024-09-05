@@ -7,7 +7,7 @@ import ConnectionChecker from './components/ConnectionChecker'
 function App() {
   return (
     <HashRouter>
-      <Routes>
+      <Routes basename={window.location.pathname}>
         <Route path="/" element={<ControlPanel />} />
         <Route path="ans" element={<AnswerWindow />} />
         <Route path="inst" element={<InstructionWindow />} />

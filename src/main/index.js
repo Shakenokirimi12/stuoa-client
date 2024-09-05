@@ -140,6 +140,7 @@ app.whenReady().then(() => {
       connectionChecker.setMenuBarVisibility(false)
       connectionChecker.setAlwaysOnTop(true, 'screen-saver') // 常に最前面に表示する
       connectionChecker.setVisibleOnAllWorkspaces(true)
+
       const urlToLoad = is.dev && process.env['ELECTRON_RENDERER_URL']
         ? new URL('#/connection_checker', process.env['ELECTRON_RENDERER_URL']).toString()
         : `file://${resolve(__dirname, '../renderer/index.html#/connection_checker')}`
