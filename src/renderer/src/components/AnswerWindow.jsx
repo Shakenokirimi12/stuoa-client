@@ -87,13 +87,18 @@ const AnswerWindow = () => {
   }
 
   window.remoteFunctionHandler.onInvokeFunction(async (functionName) => {
-    if (functionName === 'showKeyboard') {
-      let currentKeyboardType = await window.globalVariableHandler.getSharedData(
-        'currentQuestionAnswerType'
-      )
-      setKeyboardMode(currentKeyboardType)
-    } else if (functionName === 'waitForStaffControl') {
-      setKeyboardMode('waitingForStaffControl')
+    try {
+      if (functionName === 'showKeyboard') {
+        const currentKeyboardType = await window.globalVariableHandler.getSharedData(
+          'currentQuestionAnswerType'
+        )
+        console.log('called!', currentKeyboardType)
+        setKeyboardMode(currentKeyboardType)
+      } else if (functionName === 'waitForStaffControl') {
+        setKeyboardMode('waitingForStaffControl')
+      }
+    } catch (error) {
+      console.error('Error invoking function:', error)
     }
   })
 

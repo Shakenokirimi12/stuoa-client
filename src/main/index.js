@@ -1,12 +1,11 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
-import { join, resolve } from 'path'
+import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 
 let instructionWindow = null
 let answerWindow = null
 let questionWindow = null
-let connectionChecker = null
 
 function createWindow() {
   const mainWindow = new BrowserWindow({
@@ -15,7 +14,7 @@ function createWindow() {
     show: false,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
-      preload: join(__dirname, '..', 'preload', 'index.js'),
+      preload: join(__dirname, '../preload/index.js'),
       sandbox: false
     }
   })
@@ -30,9 +29,9 @@ function createWindow() {
   })
 
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-    mainWindow.loadURL(new URL(process.env['ELECTRON_RENDERER_URL']).toString())
+    mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
   } else {
-    mainWindow.loadFile(resolve(__dirname, '..', 'renderer', 'index.html'))
+    mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
 }
 
@@ -56,19 +55,18 @@ app.whenReady().then(() => {
         fullscreen: true,
         frame: false,
         webPreferences: {
-          preload: join(__dirname, '..', 'preload', 'index.js'),
+          preload: join(__dirname, '../preload/index.js'),
           sandbox: false
         }
       })
-      instructionWindow.setMenuBarVisibility(false)
-
       instructionWindow.on('ready-to-show', () => {
         instructionWindow.show()
       })
-      const urlToLoad = is.dev && process.env['ELECTRON_RENDERER_URL']
-        ? new URL('#inst', process.env['ELECTRON_RENDERER_URL']).toString()
-        : resolve(__dirname, '..', 'renderer', 'index.html#inst')
-      instructionWindow.loadURL(urlToLoad)
+      if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
+        instructionWindow.loadURL(join(process.env['ELECTRON_RENDERER_URL'], '/#/inst'))
+      } else {
+        instructionWindow.loadFile(join(__dirname, '../renderer/index.html#/inst'))
+      }
     }
   })
 
@@ -79,19 +77,18 @@ app.whenReady().then(() => {
         fullscreen: true,
         frame: false,
         webPreferences: {
-          preload: join(__dirname, '..', 'preload', 'index.js'),
+          preload: join(__dirname, '../preload/index.js'),
           sandbox: false
         }
       })
-      answerWindow.setMenuBarVisibility(false)
-
       answerWindow.on('ready-to-show', () => {
         answerWindow.show()
       })
-      const urlToLoad = is.dev && process.env['ELECTRON_RENDERER_URL']
-        ? new URL('#ans', process.env['ELECTRON_RENDERER_URL']).toString()
-        : resolve(__dirname, '..', 'renderer', 'index.html#ans')
-      answerWindow.loadURL(urlToLoad)
+      if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
+        answerWindow.loadURL(join(process.env['ELECTRON_RENDERER_URL'], '/#/ans'))
+      } else {
+        answerWindow.loadFile(join(__dirname, '../renderer/index.html#/ans'))
+      }
     }
   })
 
@@ -102,44 +99,58 @@ app.whenReady().then(() => {
         fullscreen: true,
         frame: false,
         webPreferences: {
-          preload: join(__dirname, '..', 'preload', 'index.js'),
+          preload: join(__dirname, '../preload/index.js'),
           sandbox: false
         }
       })
-      questionWindow.setMenuBarVisibility(false)
-
       questionWindow.on('ready-to-show', () => {
         questionWindow.show()
       })
-      const urlToLoad = is.dev && process.env['ELECTRON_RENDERER_URL']
-        ? new URL('#ques', process.env['ELECTRON_RENDERER_URL']).toString()
-        : resolve(__dirname, '..', 'renderer', 'index.html#ques')
-      questionWindow.loadURL(urlToLoad)
+
+      if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
+        questionWindow.loadURL(join(process.env['ELECTRON_RENDERER_URL'], '/#/ques'))
+      } else {
+        questionWindow.loadFile(join(__dirname, '../renderer/index.html#/ques'))
+      }
     }
+    ; ``
+  })
+
+  ipcMain.handle('show-screen-numbers', () => {
+    if (!questionWindow || questionWindow.isDestroyed()) {
+      questionWindow = new BrowserWindow({})
+      if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
+        questionWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
+      } else {
+        questionWindow.loadFile(join(__dirname, '../renderer/index.html'))
+      }
+    }
+    questionWindow.on('ready-to-show', () => {
+      questionWindow.show()
+    })
   })
 
   ipcMain.handle('server-connection-checker', () => {
-    if (!connectionChecker || connectionChecker.isDestroyed()) {
-      connectionChecker = new BrowserWindow({
+    if (!questionWindow || questionWindow.isDestroyed()) {
+      questionWindow = new BrowserWindow({
         modal: true,
         width: 200,
         height: 200,
         webPreferences: {
-          preload: join(__dirname, '..', 'preload', 'index.js'),
+          preload: join(__dirname, '../preload/index.js'),
           sandbox: false
         }
       })
-      connectionChecker.setMenuBarVisibility(false)
-
-      connectionChecker.setAlwaysOnTop(true, 'screen-saver') // 常に最前面に表示する
-      connectionChecker.setVisibleOnAllWorkspaces(true)
-      const urlToLoad = is.dev && process.env['ELECTRON_RENDERER_URL']
-        ? new URL('#connection_checker', process.env['ELECTRON_RENDERER_URL']).toString()
-        : resolve(__dirname, '..', 'renderer', 'index.html#connection_checker')
-      connectionChecker.loadURL(urlToLoad)
+      questionWindow.setAlwaysOnTop(true, 'screen-saver') // 常に最前面に表示する
+      questionWindow.setVisibleOnAllWorkspaces(true)
+      if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
+        questionWindow.loadURL(process.env['ELECTRON_RENDERER_URL'] + '/#/connection_checker')
+      } else {
+        questionWindow.loadFile(join(__dirname, '../renderer/index.html#/connection_checker'))
+      }
     }
-    connectionChecker.on('ready-to-show', () => {
-      connectionChecker.show()
+    questionWindow.on('ready-to-show', () => {
+      questionWindow.show()
     })
   })
 
@@ -154,10 +165,42 @@ app.whenReady().then(() => {
   ipcMain.handle('get-shared-data', (event, key) => {
     return sharedData[key]
   })
+
+  ipcMain.handle('reset-shared-data', () => {
+    sharedData = {}
+  })
+
 })
 
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
+  if (process.platform != 'darwin') {
     app.quit()
   }
 })
+
+// JSONで関数実行と対象ウィンドウを指定
+ipcMain.on('execute-function', (event, { targetWindow, functionName }) => {
+  let target
+
+  switch (targetWindow) {
+    case 'AnswerWindow':
+      target = answerWindow
+      break
+    case 'InstructionWindow':
+      target = instructionWindow
+      break
+    case 'QuestionWindow':
+      target = questionWindow
+      break
+    default:
+      console.error('Unknown target window:', targetWindow)
+      return
+  }
+
+  if (target && !target.isDestroyed()) {
+    target.webContents.send('invoke-function', { functionName })
+  } else {
+    console.error('Target window is not available:', targetWindow)
+  }
+})
+
