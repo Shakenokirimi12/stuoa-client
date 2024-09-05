@@ -15,7 +15,7 @@ function createWindow() {
     show: false,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
-      preload: join(__dirname, '../preload/index.js'),
+      preload: join(__dirname, '..', 'preload', 'index.js'),
       sandbox: false
     }
   })
@@ -32,7 +32,7 @@ function createWindow() {
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
     mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
   } else {
-    mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
+    mainWindow.loadFile(join(__dirname, '..', 'renderer', 'index.html'))
   }
 }
 
@@ -56,7 +56,7 @@ app.whenReady().then(() => {
         fullscreen: true,
         frame: false,
         webPreferences: {
-          preload: join(__dirname, '../preload/index.js'),
+          preload: join(__dirname, '..', 'preload', 'index.js'),
           sandbox: false
         }
       })
@@ -66,9 +66,9 @@ app.whenReady().then(() => {
         instructionWindow.show()
       })
       if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-        instructionWindow.loadURL(join(process.env['ELECTRON_RENDERER_URL'], '/#/inst'))
+        instructionWindow.loadURL(join(process.env['ELECTRON_RENDERER_URL'] + '#', 'inst'))
       } else {
-        instructionWindow.loadFile(join(__dirname, '../renderer/index.html#/inst'))
+        instructionWindow.loadFile(join(__dirname, '..', 'renderer', 'index.html#', 'inst'))
       }
     }
   })
@@ -80,7 +80,7 @@ app.whenReady().then(() => {
         fullscreen: true,
         frame: false,
         webPreferences: {
-          preload: join(__dirname, '../preload/index.js'),
+          preload: join(__dirname, '..', 'preload', 'index.js'),
           sandbox: false
         }
       })
@@ -90,9 +90,9 @@ app.whenReady().then(() => {
         answerWindow.show()
       })
       if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-        answerWindow.loadURL(join(process.env['ELECTRON_RENDERER_URL'], '/#/ans'))
+        answerWindow.loadURL(join(process.env['ELECTRON_RENDERER_URL'] + '#', 'ans'))
       } else {
-        answerWindow.loadFile(join(__dirname, '../renderer/index.html#/ans'))
+        answerWindow.loadFile(join(__dirname, '..', 'renderer', 'index.html#', 'ans'))
       }
     }
   })
@@ -104,7 +104,7 @@ app.whenReady().then(() => {
         fullscreen: true,
         frame: false,
         webPreferences: {
-          preload: join(__dirname, '../preload/index.js'),
+          preload: join(__dirname, '..', 'preload', 'index.js'),
           sandbox: false
         }
       })
@@ -115,27 +115,14 @@ app.whenReady().then(() => {
       })
 
       if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-        questionWindow.loadURL(join(process.env['ELECTRON_RENDERER_URL'], '/#/ques'))
+        questionWindow.loadURL(join(process.env['ELECTRON_RENDERER_URL'], '#', 'ques'))
       } else {
-        questionWindow.loadFile(join(__dirname, '../renderer/index.html#/ques'))
+        questionWindow.loadFile(join(__dirname, '..', 'renderer', 'index.html#', 'ques'))
       }
     }
-    ;``
+    ;
   })
 
-  ipcMain.handle('show-screen-numbers', () => {
-    if (!questionWindow || questionWindow.isDestroyed()) {
-      questionWindow = new BrowserWindow({})
-      if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-        questionWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
-      } else {
-        questionWindow.loadFile(join(__dirname, '../renderer/index.html'))
-      }
-    }
-    questionWindow.on('ready-to-show', () => {
-      questionWindow.show()
-    })
-  })
 
   ipcMain.handle('server-connection-checker', () => {
     if (!connectionChecker || connectionChecker.isDestroyed()) {
@@ -144,7 +131,7 @@ app.whenReady().then(() => {
         width: 200,
         height: 200,
         webPreferences: {
-          preload: join(__dirname, '../preload/index.js'),
+          preload: join(__dirname, '..', 'preload', 'index.js'),
           sandbox: false
         }
       })
@@ -153,9 +140,13 @@ app.whenReady().then(() => {
       connectionChecker.setAlwaysOnTop(true, 'screen-saver') // 常に最前面に表示する
       connectionChecker.setVisibleOnAllWorkspaces(true)
       if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-        connectionChecker.loadURL(process.env['ELECTRON_RENDERER_URL'] + '/#/connection_checker')
+        connectionChecker.loadURL(
+          join(process.env['ELECTRON_RENDERER_URL'], '#', 'connection_checker')
+        )
       } else {
-        connectionChecker.loadFile(join(__dirname, '../renderer/index.html#/connection_checker'))
+        connectionChecker.loadFile(
+          join(__dirname, '..', 'renderer', 'index.html#', 'connection_checker')
+        )
       }
     }
     connectionChecker.on('ready-to-show', () => {
