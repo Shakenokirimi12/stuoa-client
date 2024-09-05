@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import KanaKeyboard from './HiraganaKeyboard'
 import AlphabetKeyboard from './AlphabetKeyboard'
 import postError from '../fetcher/errorReporter'
+import NumberInput from './NumberInput'
 
 const AnswerWindow = () => {
   const [roomId, setRoomId] = useState('')
@@ -153,6 +154,8 @@ const AnswerWindow = () => {
         {keyboardMode === 'alphabet' && (
           <AlphabetKeyboard onSubmitComplete={handleSubmissionComplete} />
         )}
+
+        {keyboardMode === 'number' && <NumberInput onSubmitComplete={handleSubmissionComplete} />}
 
         {keyboardMode === 'blank' && <Flex height="100%" width="100%" bg="white" />}
       </Flex>

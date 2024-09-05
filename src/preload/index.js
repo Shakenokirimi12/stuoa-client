@@ -62,6 +62,10 @@ contextBridge.exposeInMainWorld('globalVariableHandler', {
     } catch (error) {
       console.error(`Failed to get shared data for key ${key}:, error`)
     }
+  },
+  resetSharedData: async () => {
+    await ipcRenderer.invoke('reset-shared-data')
+
   }
 })
 

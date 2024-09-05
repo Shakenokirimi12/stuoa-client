@@ -39,8 +39,9 @@ const InstructionWindow = () => {
   }, [])
 
   // Handle state change when countdown video ends
-  const onCountDownEnded = () => {
-    // Add logic for what happens when the countdown video ends
+  const onCountDownEnded = async () => {
+    await window.globalVariableHandler.setSharedData('isCleared', false)
+    window.remoteFunctionHandler.executeFunction('InstructionWindow', `playEnding`)
   }
 
   const startOrUpdateChallenge = async (isFirst) => {
@@ -67,6 +68,35 @@ const InstructionWindow = () => {
     setShowState('exitinstruction')
   }
 
+  const sendDataToServer = async () => {
+    let gameResult = await window.globalVariableHandler.getSharedData('isCleared')
+    let data
+    if (gameResult) {
+      data = {
+        result: 'Cleared'
+      }
+    } else {
+      data = {
+        result: 'Failed'
+      }
+    }
+    const roomId = await window.globalVariableHandler.getSharedData('roomId')
+    const response = await fetch(`http://${serverIP}/api/client/finish/${roomId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    })
+
+    const resultData = await response.json()
+    if (resultData.success) {
+      console.log('Success:', resultData.message)
+    } else {
+      console.error('Error:', resultData.message)
+    }
+  }
+
   window.remoteFunctionHandler.onInvokeFunction(async (functionName) => {
     if (functionName === 'PlayCorrectMovie') {
       setInstructionState('correct')
@@ -75,11 +105,14 @@ const InstructionWindow = () => {
     } else if (functionName === 'playOpening') {
       playOpening()
     } else if (functionName === 'playEnding') {
+      await sendDataToServer()
       playEnding()
     } else if (functionName === 'playExitInstruction') {
       playExitInstruction()
       setInstructionState('icon')
+      window.remoteFunctionHandler.executeFunction('QuestionWindow', 'clearWindow')
       window.remoteFunctionHandler.executeFunction('AnswerWindow', 'waitForStaffControl')
+      window.globalVariableHandler.resetSharedData()
     }
   })
   return (
@@ -166,7 +199,7 @@ const InstructionWindow = () => {
               width="100%"
               height="100%"
               autoPlay
-              onEnded={() => startOrUpdateChallenge(false)}
+              onEnded={() => startOrUpdateChallenge(true)}
             >
               <source src={`http://${serverIP}/api/client/getFile/opening.mp4`} type="video/mp4" />
               Your browser does not support the video tag.

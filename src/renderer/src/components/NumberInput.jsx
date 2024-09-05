@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Button, Input, VStack, HStack, Grid, Center } from '@chakra-ui/react'
+import { Button, Input, VStack, Center, Box, Img } from '@chakra-ui/react'
 import {
   Modal,
   ModalOverlay,
@@ -10,8 +10,7 @@ import {
   Text
 } from '@chakra-ui/react'
 
-// eslint-disable-next-line react/prop-types
-const AlphabetKeyboard = ({ onSubmitComplete }) => {
+const NumberInput = ({ onSubmitComplete }) => {
   const [inputText, setInputText] = useState('')
   const maxLength = 10
   const [serverIP, setServerIP] = useState('')
@@ -23,18 +22,29 @@ const AlphabetKeyboard = ({ onSubmitComplete }) => {
       setServerIP(ip)
     }
     fetchServerIP()
-  }, [])
 
-  const handleCharClick = (char) => {
-    setInputText((prev) => (prev.length < maxLength ? prev + char : prev))
-  }
+    const handleKeyDown = (e) => {
+      const { key } = e
+      if (!isNaN(key) && inputText.length < maxLength) {
+        // If the key is a number and within the max length
+        setInputText((prev) => prev + key)
+      } else if (key === 'Backspace' || key === '+') {
+        // Handle backspace and "+" as backspace
+        handleBackspace()
+      } else if (key === 'Enter') {
+        // Submit the answer on Enter
+        onOpen()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [inputText, maxLength])
 
   const handleBackspace = () => {
     setInputText((prev) => prev.slice(0, -1))
-  }
-
-  const handleClear = () => {
-    setInputText('')
   }
 
   const handleSubmit = async () => {
@@ -133,65 +143,14 @@ const AlphabetKeyboard = ({ onSubmitComplete }) => {
           borderColor={inputText.length > maxLength ? 'red.500' : 'transparent'}
           borderWidth={inputText.length > maxLength ? '2px' : '1px'}
         />
-
-        <HStack w="full" h="full" spacing={6} alignItems="flex-start">
-          <VStack w="85%" spacing={4}>
-            <Grid templateColumns="repeat(10, 1fr)" gap={4} w="full">
-              {['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'].map((char, charIndex) => (
-                <Button
-                  key={`char-${char}-${charIndex}`}
-                  onClick={() => handleCharClick(char)}
-                  colorScheme="teal"
-                  fontSize="70px"
-                  h="25vh"
-                  w="110px"
-                >
-                  {char}
-                </Button>
-              ))}
-            </Grid>
-            <Grid templateColumns="repeat(11, 1fr)" gap={4} w="full">
-              {['', 'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ''].map((char, charIndex) => (
-                <Button
-                  key={`char-${char || 'empty'}-${charIndex}`}
-                  onClick={() => handleCharClick(char)}
-                  colorScheme={char === '' ? 'gray' : 'teal'}
-                  fontSize="70px"
-                  h="25vh"
-                  w="110px"
-                >
-                  {char}
-                </Button>
-              ))}
-            </Grid>
-            <Grid templateColumns="repeat(11, 1fr)" gap={4} w="full">
-              {['', '', 'z', 'x', 'c', 'v', 'b', 'n', 'm', '', ''].map((char, charIndex) => (
-                <Button
-                  key={`char-${char || 'empty'}-${charIndex}`}
-                  onClick={() => handleCharClick(char)}
-                  colorScheme={char === '' ? 'gray' : 'teal'}
-                  fontSize="70px"
-                  h="25vh"
-                  w="110px"
-                >
-                  {char}
-                </Button>
-              ))}
-            </Grid>
-          </VStack>
-
-          <VStack w="15%" h="full" spacing={4}>
-            <Button colorScheme="red" onClick={handleBackspace} h="full" w="full" fontSize={'50px'}>
-              1文字消す
-            </Button>
-            <Button colorScheme="yellow" onClick={handleClear} h="full" w="full" fontSize={'50px'}>
-              すべて消す
-            </Button>
-            <Button colorScheme="green" onClick={onOpen} h="full" w="full" fontSize={'50px'}>
-              送信
-            </Button>
-          </VStack>
-        </HStack>
+        <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
+          <Img
+            src={`http://${serverIP}/api/client/getFile/tenkey.png`}
+            maxWidth="100%"
+            maxHeight="100%"
+            objectFit="contain"
+          />
+        </Box>
         {inputText !== '' ? (
           <Modal isOpen={isOpen} onClose={onClose} size="lg">
             <ModalOverlay />
@@ -237,4 +196,4 @@ const AlphabetKeyboard = ({ onSubmitComplete }) => {
   )
 }
 
-export default AlphabetKeyboard
+export default NumberInput

@@ -124,12 +124,12 @@ const KanaKeyboard = ({ onSubmitComplete }) => {
 
     let currentQuestionId = await window.globalVariableHandler.getSharedData('currentQuestionId')
     let currentGroupId = await window.globalVariableHandler.getSharedData('currentGroupId')
-    let result = ans === inputText ? 'Collect' : 'Wrong'
+    let result = ans === inputText ? 'Correct' : 'Wrong'
 
     const data = {
       GroupId: currentGroupId,
       QuestionId: currentQuestionId,
-      Result: result, // 'Collect' or 'Wrong'
+      Result: result,
       ChallengerAnswer: inputText
     }
 
@@ -151,37 +151,41 @@ const KanaKeyboard = ({ onSubmitComplete }) => {
     } catch (error) {
       console.error('Network error:', error)
     }
-    if (result === 'Collect') {
-      let currentLastQuestionToClear = await window.globalVariableHandler.getSharedData(
-        'currentLastQuestionToClear'
-      )
-      if (currentLastQuestionToClear - 1 === 0) {
-        //! when player cleared
+
+    let currentLastQuestionToClear = await window.globalVariableHandler.getSharedData(
+      'currentLastQuestionToClear'
+    )
+    let currentLastQuestion =
+      await window.globalVariableHandler.getSharedData('currentLastQuestion')
+
+    if (result === 'Correct') {
+      if (currentLastQuestionToClear === 1) {
+        await window.globalVariableHandler.setSharedData('isCleared', true)
         window.remoteFunctionHandler.executeFunction('InstructionWindow', `playEnding`)
       } else {
         await window.globalVariableHandler.setSharedData(
           'currentLastQuestionToClear',
           currentLastQuestionToClear - 1
         )
+        await window.globalVariableHandler.setSharedData(
+          'currentLastQuestion',
+          currentLastQuestion - 1
+        )
         window.remoteFunctionHandler.executeFunction('InstructionWindow', `PlayCorrectMovie`)
       }
     } else {
-      window.remoteFunctionHandler.executeFunction('InstructionWindow', `PlayWrongMovie`)
-    }
-
-    let currentLastQuestion =
-      await window.globalVariableHandler.getSharedData('currentLastQuestion')
-    if (currentLastQuestion - 1 === 0) {
-      //! when player failed
-      window.remoteFunctionHandler.executeFunction('InstructionWindow', `playEnding`)
-    } else {
-      await window.globalVariableHandler.setSharedData(
-        'currentLastQuestion',
-        currentLastQuestion - 1
-      )
+      if (currentLastQuestion === currentLastQuestionToClear) {
+        await window.globalVariableHandler.setSharedData('isCleared', false)
+        window.remoteFunctionHandler.executeFunction('InstructionWindow', `playEnding`)
+      } else {
+        await window.globalVariableHandler.setSharedData(
+          'currentLastQuestion',
+          currentLastQuestion - 1
+        )
+        window.remoteFunctionHandler.executeFunction('InstructionWindow', `PlayWrongMovie`)
+      }
     }
   }
-
   const confirmSubmit = async () => {
     try {
       await handleSubmit()
