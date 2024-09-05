@@ -43,7 +43,7 @@ const QuestionWindow = () => {
       let currentGroupId = await window.globalVariableHandler.getSharedData('currentGroupId')
       let currentGroupDifficulty =
         await window.globalVariableHandler.getSharedData('currentGroupDifficulty')
-      showQuestion(currentGroupId, currentGroupDifficulty)
+      await showQuestion(currentGroupId, currentGroupDifficulty)
       await window.remoteFunctionHandler.executeFunction('AnswerWindow', 'showKeyboard')
     } else if (functionName === 'clearWindow') {
       setImageSrc(`http://${serverIP}/api/client/getFile/icon.png`)
