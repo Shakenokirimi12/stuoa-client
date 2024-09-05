@@ -38,6 +38,13 @@ contextBridge.exposeInMainWorld('myAPI', {
     } catch (error) {
       console.error('Failed to check server connection:', error)
     }
+  },
+  getAllScreens: async () => {
+    try {
+      return await ipcRenderer.invoke('get-all-screens')
+    } catch (error) {
+      console.error('Failed to get all screens:', error)
+    }
   }
 })
 
@@ -46,14 +53,14 @@ contextBridge.exposeInMainWorld('globalVariableHandler', {
     try {
       await ipcRenderer.invoke('set-shared-data', key, value)
     } catch (error) {
-      console.error(`Failed to set shared data for key ${key}:`, error)
+      console.error(`Failed to set shared data for key ${key}:, error`)
     }
   },
   getSharedData: async (key) => {
     try {
       return await ipcRenderer.invoke('get-shared-data', key)
     } catch (error) {
-      console.error(`Failed to get shared data for key ${key}:`, error)
+      console.error(`Failed to get shared data for key ${key}:, error`)
     }
   }
 })
