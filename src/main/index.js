@@ -1,6 +1,5 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join, resolve } from 'path'
-import { url } from 'url'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 
@@ -31,7 +30,7 @@ function createWindow() {
   })
 
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-    mainWindow.loadURL(new url.URL(process.env['ELECTRON_RENDERER_URL']).toString())
+    mainWindow.loadURL(new URL(process.env['ELECTRON_RENDERER_URL']).toString())
   } else {
     mainWindow.loadFile(resolve(__dirname, '..', 'renderer', 'index.html'))
   }
@@ -67,7 +66,7 @@ app.whenReady().then(() => {
         instructionWindow.show()
       })
       const urlToLoad = is.dev && process.env['ELECTRON_RENDERER_URL']
-        ? new url.URL('#inst', process.env['ELECTRON_RENDERER_URL']).toString()
+        ? new URL('#inst', process.env['ELECTRON_RENDERER_URL']).toString()
         : resolve(__dirname, '..', 'renderer', 'index.html#inst')
       instructionWindow.loadURL(urlToLoad)
     }
@@ -90,7 +89,7 @@ app.whenReady().then(() => {
         answerWindow.show()
       })
       const urlToLoad = is.dev && process.env['ELECTRON_RENDERER_URL']
-        ? new url.URL('#ans', process.env['ELECTRON_RENDERER_URL']).toString()
+        ? new URL('#ans', process.env['ELECTRON_RENDERER_URL']).toString()
         : resolve(__dirname, '..', 'renderer', 'index.html#ans')
       answerWindow.loadURL(urlToLoad)
     }
@@ -113,7 +112,7 @@ app.whenReady().then(() => {
         questionWindow.show()
       })
       const urlToLoad = is.dev && process.env['ELECTRON_RENDERER_URL']
-        ? new url.URL('#ques', process.env['ELECTRON_RENDERER_URL']).toString()
+        ? new URL('#ques', process.env['ELECTRON_RENDERER_URL']).toString()
         : resolve(__dirname, '..', 'renderer', 'index.html#ques')
       questionWindow.loadURL(urlToLoad)
     }
@@ -135,7 +134,7 @@ app.whenReady().then(() => {
       connectionChecker.setAlwaysOnTop(true, 'screen-saver') // 常に最前面に表示する
       connectionChecker.setVisibleOnAllWorkspaces(true)
       const urlToLoad = is.dev && process.env['ELECTRON_RENDERER_URL']
-        ? new url.URL('#connection_checker', process.env['ELECTRON_RENDERER_URL']).toString()
+        ? new URL('#connection_checker', process.env['ELECTRON_RENDERER_URL']).toString()
         : resolve(__dirname, '..', 'renderer', 'index.html#connection_checker')
       connectionChecker.loadURL(urlToLoad)
     }
