@@ -29,9 +29,10 @@ function createWindow() {
     return { action: 'deny' }
   })
 
+  // Windows と他のプラットフォームで URL を分岐
   const urlToLoad = is.dev && process.env['ELECTRON_RENDERER_URL']
     ? process.env['ELECTRON_RENDERER_URL']
-    : `file://${resolve(__dirname, '../renderer/index.html')}`
+    : `file://${resolve(__dirname, process.platform === 'win32' ? '..\\renderer\\index.html' : '../renderer/index.html')}`
 
   mainWindow.loadURL(urlToLoad)
 }
@@ -67,8 +68,8 @@ app.whenReady().then(() => {
       })
 
       const urlToLoad = is.dev && process.env['ELECTRON_RENDERER_URL']
-        ? new URL('#/inst', process.env['ELECTRON_RENDERER_URL']).toString()
-        : `file://${resolve(__dirname, '../renderer/index.html#/inst')}`
+        ? new URL('#inst', process.env['ELECTRON_RENDERER_URL']).toString()
+        : `file://${resolve(__dirname, process.platform === 'win32' ? '..\\renderer\\index.html#inst' : '../renderer/index.html#/inst')}`
 
       instructionWindow.loadURL(urlToLoad)
     }
@@ -92,8 +93,8 @@ app.whenReady().then(() => {
       })
 
       const urlToLoad = is.dev && process.env['ELECTRON_RENDERER_URL']
-        ? new URL('#/ans', process.env['ELECTRON_RENDERER_URL']).toString()
-        : `file://${resolve(__dirname, '../renderer/index.html#/ans')}`
+        ? new URL('#ans', process.env['ELECTRON_RENDERER_URL']).toString()
+        : `file://${resolve(__dirname, process.platform === 'win32' ? '..\\renderer\\index.html#ans' : '../renderer/index.html#/ans')}`
 
       answerWindow.loadURL(urlToLoad)
     }
@@ -117,8 +118,8 @@ app.whenReady().then(() => {
       })
 
       const urlToLoad = is.dev && process.env['ELECTRON_RENDERER_URL']
-        ? new URL('#/ques', process.env['ELECTRON_RENDERER_URL']).toString()
-        : `file://${resolve(__dirname, '../renderer/index.html#/ques')}`
+        ? new URL('#ques', process.env['ELECTRON_RENDERER_URL']).toString()
+        : `file://${resolve(__dirname, process.platform === 'win32' ? '..\\renderer\\index.html#ques' : '../renderer/index.html#/ques')}`
 
       questionWindow.loadURL(urlToLoad)
     }
@@ -142,8 +143,8 @@ app.whenReady().then(() => {
       connectionChecker.setVisibleOnAllWorkspaces(true)
 
       const urlToLoad = is.dev && process.env['ELECTRON_RENDERER_URL']
-        ? new URL('#/connection_checker', process.env['ELECTRON_RENDERER_URL']).toString()
-        : `file://${resolve(__dirname, '../renderer/index.html#/connection_checker')}`
+        ? new URL('#connection_checker', process.env['ELECTRON_RENDERER_URL']).toString()
+          : `file://${resolve(__dirname, process.platform === 'win32' ? '..\\renderer\\index.html#connection_checker' : '../renderer/index.html#/connection_checker')}`
 
       connectionChecker.loadURL(urlToLoad)
     }
