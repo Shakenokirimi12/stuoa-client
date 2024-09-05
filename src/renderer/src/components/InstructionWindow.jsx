@@ -8,9 +8,13 @@ const InstructionWindow = () => {
   const videoRef = useRef(null)
 
   // Function to update videoId and optionally perform other actions
-  const updateVideo = (lastQuestionCount, lastToClear) => {
-    setVideoId(`_${lastQuestionCount}_${lastToClear}`)
-    setShowState('video') // Ensure that the video is set to be shown
+  const updateVideo = (lastQuestionCount, lastToClear, isFirst) => {
+    if (isFirst) {
+      setVideoId(`_${lastQuestionCount}_${lastToClear}_start`)
+    } else {
+      setVideoId(`_${lastQuestionCount}_${lastToClear}`)
+    }
+    setShowState('instruction') // Ensure that the video is set to be shown
   }
 
   // Handle video playback when videoId or instructionState changes
@@ -22,11 +26,14 @@ const InstructionWindow = () => {
   }, [videoId, instructionState])
 
   const [serverIP, setServerIP] = useState('')
+  const [exitPosition, setExitPosition] = useState('right')
 
   useEffect(() => {
     const fetchServerIP = async () => {
       const ip = await window.globalVariableHandler.getSharedData('server_IP')
       setServerIP(ip)
+      const exit = await window.globalVariableHandler.getSharedData('exitPosition')
+      setExitPosition(exit)
     }
     fetchServerIP()
   }, [])
@@ -36,36 +43,45 @@ const InstructionWindow = () => {
     // Add logic for what happens when the countdown video ends
   }
 
-  const onAnswerSubmitted = (correct) => {
-    if (correct) {
-      setInstructionState('correct')
-    } else {
-      setInstructionState('wrong')
-    }
+  const startOrUpdateChallenge = async (isFirst) => {
+    let currentLastQuestion =
+      await window.globalVariableHandler.getSharedData('currentLastQuestion')
+    let currentLastQuestionToClear = await window.globalVariableHandler.getSharedData(
+      'currentLastQuestionToClear'
+    )
+    updateVideo(currentLastQuestion, currentLastQuestionToClear, isFirst) //? 残問題数表示の数値を設定
+    setShowState('instruction')
+    setInstructionState('lastQuestion') //? 残問題数表示を表示
+    window.remoteFunctionHandler.executeFunction('QuestionWindow', 'showQuestion')
   }
 
-  //! for debbuging
-  // Add a keydown event listener when showState is 'video'
-  useEffect(() => {
-    const handleKeyDown = async (event) => {
-      if (event.key === 'a') {
-        onAnswerSubmitted(true)
-      } else if (event.key === 'b') {
-        onAnswerSubmitted(false)
-      } else if (event.key === 'c') {
-        let currentLastQuestion =
-          await window.globalVariableHandler.setSharedData('currentLastQuestion')
-        let currentLastQuestionToClear = await window.globalVariableHandler.setSharedData(
-          'currentLastQuestionToClear'
-        )
-        updateVideo(currentLastQuestion, currentLastQuestionToClear)
-      }
-    }
-    window.addEventListener('keydown', handleKeyDown)
-  }, [showState])
-  //! for debbuging
+  const playOpening = () => {
+    setShowState('opening')
+  }
 
-  // Conditional rendering based on showState
+  const playEnding = () => {
+    setShowState('ending')
+  }
+
+  const playExitInstruction = () => {
+    setShowState('exitinstruction')
+  }
+
+  window.remoteFunctionHandler.onInvokeFunction(async (functionName) => {
+    if (functionName === 'PlayCorrectMovie') {
+      setInstructionState('correct')
+    } else if (functionName === 'PlayWrongMovie') {
+      setInstructionState('wrong')
+    } else if (functionName === 'playOpening') {
+      playOpening()
+    } else if (functionName === 'playEnding') {
+      playEnding()
+    } else if (functionName === 'playExitInstruction') {
+      playExitInstruction()
+      setInstructionState('icon')
+      window.remoteFunctionHandler.executeFunction('AnswerWindow', 'waitForStaffControl')
+    }
+  })
   return (
     <ChakraProvider>
       {showState === 'icon' ? (
@@ -77,7 +93,7 @@ const InstructionWindow = () => {
             objectFit="contain"
           />
         </Box>
-      ) : showState === 'video' ? (
+      ) : showState === 'instruction' ? (
         <VStack>
           <Box display="flex" justifyContent="center" alignItems="center" height="75vh">
             {instructionState === 'lastQuestion' ? (
@@ -105,7 +121,7 @@ const InstructionWindow = () => {
                 width="100%"
                 height="100%"
                 autoPlay
-                onEnded={() => setInstructionState('lastQuestion')}
+                onEnded={async () => await startOrUpdateChallenge(false)}
               >
                 <source
                   src={`http://${serverIP}/api/client/getFile/correct.mp4`}
@@ -119,7 +135,7 @@ const InstructionWindow = () => {
                 width="100%"
                 height="100%"
                 autoPlay
-                onEnded={() => setInstructionState('lastQuestion')}
+                onEnded={async () => await startOrUpdateChallenge(false)}
               >
                 <source src={`http://${serverIP}/api/client/getFile/wrong.mp4`} type="video/mp4" />
                 Your browser does not support the video tag.
@@ -136,24 +152,68 @@ const InstructionWindow = () => {
             </video>
           </Box>
         </VStack>
-      ) : (
+      ) : showState === 'opening' ? (
         <VStack>
-          <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
+          <Box
+            display="flex"
+            justifyContent="center"
+            alignItems="center"
+            height="100vh"
+            width={'100vw'}
+          >
             <video
               ref={videoRef}
               width="100%"
               height="100%"
               autoPlay
-              onEnded={() => setShowState('icon')}
+              onEnded={() => startOrUpdateChallenge(false)}
             >
-              <source
-                src={`http://${serverIP}/api/client/getFile/exit_right.mp4`}
-                type="video/mp4"
-              />
+              <source src={`http://${serverIP}/api/client/getFile/opening.mp4`} type="video/mp4" />
               Your browser does not support the video tag.
             </video>
           </Box>
         </VStack>
+      ) : showState === 'ending' ? (
+        <VStack>
+          <Box
+            display="flex"
+            justifyContent="center"
+            alignItems="center"
+            height="100vh"
+            width={'100vw'}
+          >
+            <video
+              ref={videoRef}
+              width="100%"
+              height="100%"
+              autoPlay
+              onEnded={() => playExitInstruction()}
+            >
+              <source src={`http://${serverIP}/api/client/getFile/opening.mp4`} type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+          </Box>
+        </VStack>
+      ) : (
+        showState === 'exitinstruction' && (
+          <VStack>
+            <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
+              <video
+                ref={videoRef}
+                width="100%"
+                height="100%"
+                autoPlay
+                onEnded={() => setShowState('icon')}
+              >
+                <source
+                  src={`http://${serverIP}/api/client/getFile/exit_${exitPosition}.mp4`}
+                  type="video/mp4"
+                />
+                Your browser does not support the video tag.
+              </video>
+            </Box>
+          </VStack>
+        )
       )}
     </ChakraProvider>
   )

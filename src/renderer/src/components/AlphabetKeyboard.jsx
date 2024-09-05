@@ -83,6 +83,7 @@ const AlphabetKeyboard = ({ onSubmitComplete }) => {
         currentLastQuestionToClear - 1
       )
     }
+    window.remoteFunctionHandler.executeFunction('InstructionWindow', `Play${result}Movie`)
   }
 
   const confirmSubmit = async () => {

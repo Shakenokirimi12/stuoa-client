@@ -38,21 +38,17 @@ const QuestionWindow = () => {
     }
   }
 
-  useEffect(() => {
-    const handleKeyDown = async (event) => {
-      if (event.key === 'a') {
-        let currentGroupId = await window.globalVariableHandler.getSharedData('currentGroupId')
-        let currentGroupDifficulty =
-          await window.globalVariableHandler.getSharedData('currentGroupDifficulty')
-        showQuestion(currentGroupId, currentGroupDifficulty)
-      }
+  window.remoteFunctionHandler.onInvokeFunction(async (functionName) => {
+    if (functionName === 'showQuestion') {
+      let currentGroupId = await window.globalVariableHandler.getSharedData('currentGroupId')
+      let currentGroupDifficulty =
+        await window.globalVariableHandler.getSharedData('currentGroupDifficulty')
+      showQuestion(currentGroupId, currentGroupDifficulty)
+      await window.remoteFunctionHandler.executeFunction('AnswerWindow', 'showKeyboard')
+    } else if (functionName === 'clearWindow') {
+      setImageSrc(`http://${serverIP}/api/client/getFile/icon.png`)
     }
-    window.addEventListener('keydown', handleKeyDown)
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown)
-    }
-  }, [serverIP])
+  })
 
   return (
     <ChakraProvider>

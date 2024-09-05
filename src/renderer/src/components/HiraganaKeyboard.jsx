@@ -119,6 +119,7 @@ const KanaKeyboard = ({ onSubmitComplete }) => {
   }
 
   const handleSubmit = async () => {
+    window.remoteFunctionHandler.executeFunction('QuestionWindow', 'clearWindow')
     let ans = await window.globalVariableHandler.getSharedData('currentQuestionAnswer')
 
     let currentQuestionId = await window.globalVariableHandler.getSharedData('currentQuestionId')
@@ -150,21 +151,37 @@ const KanaKeyboard = ({ onSubmitComplete }) => {
     } catch (error) {
       console.error('Network error:', error)
     }
-
-    let currentLastQuestion =
-      await window.globalVariableHandler.getSharedData('currentLastQuestion')
-    await window.globalVariableHandler.setSharedData('currentLastQuestion', currentLastQuestion - 1)
-
     if (result === 'Collect') {
       let currentLastQuestionToClear = await window.globalVariableHandler.getSharedData(
         'currentLastQuestionToClear'
       )
+      if (currentLastQuestionToClear - 1 === 0) {
+        //! when player cleared
+        window.remoteFunctionHandler.executeFunction('InstructionWindow', `playEnding`)
+      } else {
+        await window.globalVariableHandler.setSharedData(
+          'currentLastQuestionToClear',
+          currentLastQuestionToClear - 1
+        )
+        window.remoteFunctionHandler.executeFunction('InstructionWindow', `PlayCorrectMovie`)
+      }
+    } else {
+      window.remoteFunctionHandler.executeFunction('InstructionWindow', `PlayWrongMovie`)
+    }
+
+    let currentLastQuestion =
+      await window.globalVariableHandler.getSharedData('currentLastQuestion')
+    if (currentLastQuestion - 1 === 0) {
+      //! when player failed
+      window.remoteFunctionHandler.executeFunction('InstructionWindow', `playEnding`)
+    } else {
       await window.globalVariableHandler.setSharedData(
-        'currentLastQuestionToClear',
-        currentLastQuestionToClear - 1
+        'currentLastQuestion',
+        currentLastQuestion - 1
       )
     }
   }
+
   const confirmSubmit = async () => {
     try {
       await handleSubmit()

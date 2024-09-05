@@ -6,6 +6,7 @@ import icon from '../../resources/icon.png?asset'
 let instructionWindow = null
 let answerWindow = null
 let questionWindow = null
+let connectionChecker = null
 
 function createWindow() {
   const mainWindow = new BrowserWindow({
@@ -59,6 +60,8 @@ app.whenReady().then(() => {
           sandbox: false
         }
       })
+      instructionWindow.setMenuBarVisibility(false)
+
       instructionWindow.on('ready-to-show', () => {
         instructionWindow.show()
       })
@@ -81,6 +84,8 @@ app.whenReady().then(() => {
           sandbox: false
         }
       })
+      answerWindow.setMenuBarVisibility(false)
+
       answerWindow.on('ready-to-show', () => {
         answerWindow.show()
       })
@@ -103,6 +108,8 @@ app.whenReady().then(() => {
           sandbox: false
         }
       })
+      questionWindow.setMenuBarVisibility(false)
+
       questionWindow.on('ready-to-show', () => {
         questionWindow.show()
       })
@@ -131,8 +138,8 @@ app.whenReady().then(() => {
   })
 
   ipcMain.handle('server-connection-checker', () => {
-    if (!questionWindow || questionWindow.isDestroyed()) {
-      questionWindow = new BrowserWindow({
+    if (!connectionChecker || connectionChecker.isDestroyed()) {
+      connectionChecker = new BrowserWindow({
         modal: true,
         width: 200,
         height: 200,
@@ -141,16 +148,18 @@ app.whenReady().then(() => {
           sandbox: false
         }
       })
-      questionWindow.setAlwaysOnTop(true, 'screen-saver') // 常に最前面に表示する
-      questionWindow.setVisibleOnAllWorkspaces(true)
+      connectionChecker.setMenuBarVisibility(false)
+
+      connectionChecker.setAlwaysOnTop(true, 'screen-saver') // 常に最前面に表示する
+      connectionChecker.setVisibleOnAllWorkspaces(true)
       if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-        questionWindow.loadURL(process.env['ELECTRON_RENDERER_URL'] + '/#/connection_checker')
+        connectionChecker.loadURL(process.env['ELECTRON_RENDERER_URL'] + '/#/connection_checker')
       } else {
-        questionWindow.loadFile(join(__dirname, '../renderer/index.html#/connection_checker'))
+        connectionChecker.loadFile(join(__dirname, '../renderer/index.html#/connection_checker'))
       }
     }
-    questionWindow.on('ready-to-show', () => {
-      questionWindow.show()
+    connectionChecker.on('ready-to-show', () => {
+      connectionChecker.show()
     })
   })
 

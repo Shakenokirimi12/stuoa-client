@@ -8,7 +8,7 @@ import {
   HStack,
   Input
 } from '@chakra-ui/react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 const ControlPanel = () => {
   const [serverIP, setServerIP] = useState('192.168.1.237:3030')
@@ -17,9 +17,18 @@ const ControlPanel = () => {
   const [questionWindowDisplay, setQuestionWindowDisplay] = useState('Display 1')
   const [isServerSet, setIsServerSet] = useState(false)
   const [isConnected, setIsConnected] = useState(false)
+  const [exitPosition, setExitPosition] = useState('right')
+  const [roomId, setRoomId] = useState('A')
 
   const openInstructionWindow = () => window.myAPI.openInstructionWindow(instructionWindowDisplay)
-  const openAnswerWindow = () => window.myAPI.openAnswerWindow(answerWindowDisplay)
+  const openAnswerWindow = () => {
+    const setGlobalValue = async () => {
+      await window.globalVariableHandler.setSharedData('exitPosition', exitPosition)
+      await window.globalVariableHandler.setSharedData('roomId', roomId)
+    }
+    setGlobalValue()
+    window.myAPI.openAnswerWindow(answerWindowDisplay)
+  }
   const openQuestionWindow = () => window.myAPI.openQuestionWindow(questionWindowDisplay)
   const showScreenNumbers = () => window.myAPI.showScreenNumbers()
 
@@ -41,6 +50,20 @@ const ControlPanel = () => {
       console.error('Error updating server IP:', error)
     }
   }
+
+  useEffect(() => {
+    const setGlobalValue = async () => {
+      await window.globalVariableHandler.setSharedData('exitPosition', exitPosition)
+    }
+    setGlobalValue()
+  }, [exitPosition, isConnected])
+
+  useEffect(() => {
+    const setGlobalValue = async () => {
+      await window.globalVariableHandler.setSharedData('roomId', roomId)
+    }
+    setGlobalValue()
+  }, [roomId, isConnected, isServerSet])
 
   return (
     <ChakraProvider>
@@ -150,6 +173,29 @@ const ControlPanel = () => {
             >
               Show Screen Numbers
             </Button>
+            <HStack>
+              <Box w={'150px'}>出口の位置</Box>
+              <Select
+                value={exitPosition}
+                onChange={(e) => setExitPosition(e.target.value)}
+                disabled={!isConnected}
+              >
+                <option value="right">右側</option>
+                <option value="left">左側</option>
+              </Select>
+            </HStack>
+            <HStack>
+              <Box w={'150px'}>ルームコード</Box>
+              <Select
+                value={roomId}
+                onChange={(e) => setRoomId(e.target.value)}
+                disabled={!isConnected}
+              >
+                <option value="A">A</option>
+                <option value="B">B</option>
+                <option value="C">C</option>
+              </Select>
+            </HStack>
           </VStack>
         </VStack>
       </Box>
