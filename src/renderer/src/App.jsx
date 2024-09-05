@@ -9,10 +9,10 @@ function App() {
     <HashRouter>
       <Routes>
         <Route path="/" element={<ControlPanel />} />
-        <Route path="\ans" element={<AnswerWindow />} />
-        <Route path="\inst" element={<InstructionWindow />} />
-        <Route path="\ques" element={<QuestionWindow />} />
-        <Route path="\connection_checker" element={<ConnectionChecker />} />
+        <Route path="ans" element={<AnswerWindow />} />
+        <Route path="inst" element={<InstructionWindow />} />
+        <Route path="ques" element={<QuestionWindow />} />
+        <Route path="connection_checker" element={<ConnectionChecker />} />
       </Routes>
     </HashRouter>
   )

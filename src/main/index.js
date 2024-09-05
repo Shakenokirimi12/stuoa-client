@@ -1,5 +1,6 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
-import { join } from 'path'
+import { join, resolve } from 'path'
+import { url } from 'url'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 
@@ -30,9 +31,9 @@ function createWindow() {
   })
 
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-    mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
+    mainWindow.loadURL(new url.URL(process.env['ELECTRON_RENDERER_URL']).toString())
   } else {
-    mainWindow.loadFile(join(__dirname, '..', 'renderer', 'index.html'))
+    mainWindow.loadFile(resolve(__dirname, '..', 'renderer', 'index.html'))
   }
 }
 
@@ -65,11 +66,10 @@ app.whenReady().then(() => {
       instructionWindow.on('ready-to-show', () => {
         instructionWindow.show()
       })
-      if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-        instructionWindow.loadURL(join(process.env['ELECTRON_RENDERER_URL'] + '#', 'inst'))
-      } else {
-        instructionWindow.loadFile(join(__dirname, '..', 'renderer', 'index.html#', 'inst'))
-      }
+      const urlToLoad = is.dev && process.env['ELECTRON_RENDERER_URL']
+        ? new url.URL('#inst', process.env['ELECTRON_RENDERER_URL']).toString()
+        : resolve(__dirname, '..', 'renderer', 'index.html#inst')
+      instructionWindow.loadURL(urlToLoad)
     }
   })
 
@@ -89,11 +89,10 @@ app.whenReady().then(() => {
       answerWindow.on('ready-to-show', () => {
         answerWindow.show()
       })
-      if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-        answerWindow.loadURL(join(process.env['ELECTRON_RENDERER_URL'] + '#', 'ans'))
-      } else {
-        answerWindow.loadFile(join(__dirname, '..', 'renderer', 'index.html#', 'ans'))
-      }
+      const urlToLoad = is.dev && process.env['ELECTRON_RENDERER_URL']
+        ? new url.URL('#ans', process.env['ELECTRON_RENDERER_URL']).toString()
+        : resolve(__dirname, '..', 'renderer', 'index.html#ans')
+      answerWindow.loadURL(urlToLoad)
     }
   })
 
@@ -113,16 +112,12 @@ app.whenReady().then(() => {
       questionWindow.on('ready-to-show', () => {
         questionWindow.show()
       })
-
-      if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-        questionWindow.loadURL(join(process.env['ELECTRON_RENDERER_URL'], '#', 'ques'))
-      } else {
-        questionWindow.loadFile(join(__dirname, '..', 'renderer', 'index.html#', 'ques'))
-      }
+      const urlToLoad = is.dev && process.env['ELECTRON_RENDERER_URL']
+        ? new url.URL('#ques', process.env['ELECTRON_RENDERER_URL']).toString()
+        : resolve(__dirname, '..', 'renderer', 'index.html#ques')
+      questionWindow.loadURL(urlToLoad)
     }
-    ;
   })
-
 
   ipcMain.handle('server-connection-checker', () => {
     if (!connectionChecker || connectionChecker.isDestroyed()) {
@@ -139,15 +134,10 @@ app.whenReady().then(() => {
 
       connectionChecker.setAlwaysOnTop(true, 'screen-saver') // 常に最前面に表示する
       connectionChecker.setVisibleOnAllWorkspaces(true)
-      if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-        connectionChecker.loadURL(
-          join(process.env['ELECTRON_RENDERER_URL'], '#', 'connection_checker')
-        )
-      } else {
-        connectionChecker.loadFile(
-          join(__dirname, '..', 'renderer', 'index.html#', 'connection_checker')
-        )
-      }
+      const urlToLoad = is.dev && process.env['ELECTRON_RENDERER_URL']
+        ? new url.URL('#connection_checker', process.env['ELECTRON_RENDERER_URL']).toString()
+        : resolve(__dirname, '..', 'renderer', 'index.html#connection_checker')
+      connectionChecker.loadURL(urlToLoad)
     }
     connectionChecker.on('ready-to-show', () => {
       connectionChecker.show()
