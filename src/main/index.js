@@ -1,11 +1,12 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join, resolve } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
-import icon from '../../resources/icon.png?asset'
+import icon from '../../resources/icon.png'
 
 let instructionWindow = null
 let answerWindow = null
 let questionWindow = null
+app.commandLine.appendSwitch('disable-gpu-sandbox')
 
 function createWindow() {
   const mainWindow = new BrowserWindow({
@@ -30,8 +31,8 @@ function createWindow() {
 
   const urlToLoad = is.dev && process.env['ELECTRON_RENDERER_URL']
     ? process.env['ELECTRON_RENDERER_URL']
-    : resolve(__dirname, '../renderer/index.html')
-    
+    : `file://${resolve(__dirname, '../renderer/index.html')}`
+
   mainWindow.loadURL(urlToLoad)
 }
 
@@ -57,12 +58,18 @@ app.whenReady().then(() => {
           sandbox: false
         }
       })
+      instructionWindow.setMenuBarVisibility(false)
       instructionWindow.on('ready-to-show', () => {
         instructionWindow.show()
       })
+      instructionWindow.on('closed', () => {
+        instructionWindow = null
+      })
+
       const urlToLoad = is.dev && process.env['ELECTRON_RENDERER_URL']
         ? new URL('#/inst', process.env['ELECTRON_RENDERER_URL']).toString()
-        : resolve(__dirname, '../renderer/index.html#/inst')
+        : `file://${resolve(__dirname, '../renderer/index.html#/inst')}`
+
       instructionWindow.loadURL(urlToLoad)
     }
   })
@@ -76,12 +83,18 @@ app.whenReady().then(() => {
           sandbox: false
         }
       })
+      answerWindow.setMenuBarVisibility(false)
       answerWindow.on('ready-to-show', () => {
         answerWindow.show()
       })
+      answerWindow.on('closed', () => {
+        answerWindow = null
+      })
+
       const urlToLoad = is.dev && process.env['ELECTRON_RENDERER_URL']
         ? new URL('#/ans', process.env['ELECTRON_RENDERER_URL']).toString()
-        : resolve(__dirname, '../renderer/index.html#/ans')
+        : `file://${resolve(__dirname, '../renderer/index.html#/ans')}`
+
       answerWindow.loadURL(urlToLoad)
     }
   })
@@ -95,37 +108,27 @@ app.whenReady().then(() => {
           sandbox: false
         }
       })
+      questionWindow.setMenuBarVisibility(false)
       questionWindow.on('ready-to-show', () => {
         questionWindow.show()
       })
+      questionWindow.on('closed', () => {
+        questionWindow = null
+      })
+
       const urlToLoad = is.dev && process.env['ELECTRON_RENDERER_URL']
         ? new URL('#/ques', process.env['ELECTRON_RENDERER_URL']).toString()
-        : resolve(__dirname, '../renderer/index.html#/ques')
+        : `file://${resolve(__dirname, '../renderer/index.html#/ques')}`
+
       questionWindow.loadURL(urlToLoad)
     }
   })
 
-  ipcMain.handle('show-screen-numbers', () => {
-    if (!questionWindow || questionWindow.isDestroyed()) {
-      questionWindow = new BrowserWindow({
-        webPreferences: {
-          preload: join(__dirname, '../preload/index.js'),
-          sandbox: false
-        }
-      })
-      const urlToLoad = is.dev && process.env['ELECTRON_RENDERER_URL']
-        ? process.env['ELECTRON_RENDERER_URL']
-        : resolve(__dirname, '../renderer/index.html')
-      questionWindow.loadURL(urlToLoad)
-    }
-    questionWindow.on('ready-to-show', () => {
-      questionWindow.show()
-    })
-  })
+  let connectionChecker = null
 
   ipcMain.handle('server-connection-checker', () => {
-    if (!questionWindow || questionWindow.isDestroyed()) {
-      questionWindow = new BrowserWindow({
+    if (!connectionChecker || connectionChecker.isDestroyed()) {
+      connectionChecker = new BrowserWindow({
         modal: true,
         width: 200,
         height: 200,
@@ -134,15 +137,20 @@ app.whenReady().then(() => {
           sandbox: false
         }
       })
-      questionWindow.setAlwaysOnTop(true, 'screen-saver') // 常に最前面に表示する
-      questionWindow.setVisibleOnAllWorkspaces(true)
+      connectionChecker.setMenuBarVisibility(false)
+      connectionChecker.setAlwaysOnTop(true, 'screen-saver') // 常に最前面に表示する
+      connectionChecker.setVisibleOnAllWorkspaces(true)
       const urlToLoad = is.dev && process.env['ELECTRON_RENDERER_URL']
         ? new URL('#/connection_checker', process.env['ELECTRON_RENDERER_URL']).toString()
-        : resolve(__dirname, '../renderer/index.html#/connection_checker')
-      questionWindow.loadURL(urlToLoad)
+        : `file://${resolve(__dirname, '../renderer/index.html#/connection_checker')}`
+
+      connectionChecker.loadURL(urlToLoad)
     }
-    questionWindow.on('ready-to-show', () => {
-      questionWindow.show()
+    connectionChecker.on('ready-to-show', () => {
+      connectionChecker.show()
+    })
+    connectionChecker.on('closed', () => {
+      connectionChecker = null
     })
   })
 
