@@ -7,6 +7,7 @@ let instructionWindow = null
 let answerWindow = null
 let questionWindow = null
 app.commandLine.appendSwitch('disable-gpu-sandbox')
+ipcMain.setMaxListeners(2500)
 
 function createWindow() {
   const mainWindow = new BrowserWindow({

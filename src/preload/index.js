@@ -82,6 +82,7 @@ contextBridge.exposeInMainWorld('remoteFunctionHandler', {
     })
   },
   onInvokeFunction: (callback) => {
+    ipcRenderer.removeAllListeners('invoke-function') // 既存のリスナーを削除
     ipcRenderer.on('invoke-function', (event, { functionName }) => {
       callback(functionName)
     })

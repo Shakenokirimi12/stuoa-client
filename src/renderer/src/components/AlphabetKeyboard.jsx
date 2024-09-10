@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { Button, Input, VStack, HStack, Grid, Center } from '@chakra-ui/react'
+import { useState, useEffect } from 'react';
+import { Button, Input, VStack, HStack, Grid, Center } from '@chakra-ui/react';
 import {
   Modal,
   ModalOverlay,
@@ -8,115 +8,46 @@ import {
   ModalFooter,
   useDisclosure,
   Text
-} from '@chakra-ui/react'
+} from '@chakra-ui/react';
 
 // eslint-disable-next-line react/prop-types
-const AlphabetKeyboard = ({ onSubmitComplete }) => {
-  const [inputText, setInputText] = useState('')
-  const maxLength = 10
-  const [serverIP, setServerIP] = useState('')
-  const { isOpen, onOpen, onClose } = useDisclosure()
+const AlphabetKeyboard = ({ onSubmitComplete, onAnswerSubmitted }) => {
+  const [inputText, setInputText] = useState('');
+  const maxLength = 10;
+  const [serverIP, setServerIP] = useState('');
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   useEffect(() => {
     const fetchServerIP = async () => {
-      const ip = await window.globalVariableHandler.getSharedData('server_IP')
-      setServerIP(ip)
-    }
-    fetchServerIP()
-  }, [])
+      const ip = await window.globalVariableHandler.getSharedData('server_IP');
+      setServerIP(ip);
+    };
+    fetchServerIP();
+  }, []);
 
   const handleCharClick = (char) => {
-    setInputText((prev) => (prev.length < maxLength ? prev + char : prev))
-  }
+    setInputText((prev) => (prev.length < maxLength ? prev + char : prev));
+  };
 
   const handleBackspace = () => {
-    setInputText((prev) => prev.slice(0, -1))
-  }
+    setInputText((prev) => prev.slice(0, -1));
+  };
 
   const handleClear = () => {
-    setInputText('')
-  }
-
-  const handleSubmit = async () => {
-    window.remoteFunctionHandler.executeFunction('QuestionWindow', 'clearWindow')
-    let ans = await window.globalVariableHandler.getSharedData('currentQuestionAnswer')
-
-    let currentQuestionId = await window.globalVariableHandler.getSharedData('currentQuestionId')
-    let currentGroupId = await window.globalVariableHandler.getSharedData('currentGroupId')
-    let result = ans === inputText ? 'Correct' : 'Wrong'
-
-    const data = {
-      GroupId: currentGroupId,
-      QuestionId: currentQuestionId,
-      Result: result,
-      ChallengerAnswer: inputText
-    }
-
-    try {
-      const response = await fetch(`http://${serverIP}/api/client/answer/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-      })
-
-      const resultData = await response.json()
-      if (resultData.success) {
-        console.log('Success:', resultData.message)
-      } else {
-        console.error('Error:', resultData.message)
-      }
-    } catch (error) {
-      console.error('Network error:', error)
-    }
-
-    let currentLastQuestionToClear = await window.globalVariableHandler.getSharedData(
-      'currentLastQuestionToClear'
-    )
-    let currentLastQuestion =
-      await window.globalVariableHandler.getSharedData('currentLastQuestion')
-
-    if (result === 'Correct') {
-      if (currentLastQuestionToClear === 1) {
-        await window.globalVariableHandler.setSharedData('isCleared', true)
-        window.remoteFunctionHandler.executeFunction('InstructionWindow', `playEnding`)
-      } else {
-        await window.globalVariableHandler.setSharedData(
-          'currentLastQuestionToClear',
-          currentLastQuestionToClear - 1
-        )
-        await window.globalVariableHandler.setSharedData(
-          'currentLastQuestion',
-          currentLastQuestion - 1
-        )
-        window.remoteFunctionHandler.executeFunction('InstructionWindow', `PlayCorrectMovie`)
-      }
-    } else {
-      if (currentLastQuestion === currentLastQuestionToClear) {
-        await window.globalVariableHandler.setSharedData('isCleared', false)
-        window.remoteFunctionHandler.executeFunction('InstructionWindow', `playEnding`)
-      } else {
-        await window.globalVariableHandler.setSharedData(
-          'currentLastQuestion',
-          currentLastQuestion - 1
-        )
-        window.remoteFunctionHandler.executeFunction('InstructionWindow', `PlayWrongMovie`)
-      }
-    }
-  }
+    setInputText('');
+  };
 
   const confirmSubmit = async () => {
     try {
-      await handleSubmit()
-      onClose() // Close the modal after successful submission
+      await onAnswerSubmitted(inputText);
+      onClose(); // Close the modal after successful submission
       if (onSubmitComplete) {
-        onSubmitComplete() // Notify the parent component
+        onSubmitComplete(); // Notify the parent component
       }
     } catch (error) {
-      console.error('Submission error:', error)
+      console.error('Submission error:', error);
     }
-  }
+  };
 
   return (
     <Center h="100vh" w="100vw">
@@ -234,7 +165,7 @@ const AlphabetKeyboard = ({ onSubmitComplete }) => {
         )}
       </VStack>
     </Center>
-  )
-}
+  );
+};
 
-export default AlphabetKeyboard
+export default AlphabetKeyboard;
