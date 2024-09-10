@@ -1,5 +1,5 @@
 import { Button, ChakraProvider, Flex, Text, VStack } from '@chakra-ui/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import KanaKeyboard from './HiraganaKeyboard';
 import AlphabetKeyboard from './AlphabetKeyboard';
 import postError from '../fetcher/errorReporter';
@@ -10,8 +10,11 @@ const AnswerWindow = () => {
   const [errorOccured, setErrorState] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [keyboardMode, setKeyboardMode] = useState(null);
-
   const [serverIP, setServerIP] = useState('');
+  const [countdown, setCountdown] = useState(null);
+  const [emergencyTriggered, setEmergencyTriggered] = useState(false);
+
+  const timerRef = useRef(null);
 
   useEffect(() => {
     const fetchServerIP = async () => {
@@ -27,6 +30,62 @@ const AnswerWindow = () => {
 
     fetchServerIP();
   }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === '/' || event.key === '*') {
+        if (!countdown && !emergencyTriggered) {
+          startEmergencyCountdown();
+        }
+      }
+    };
+
+    const handleKeyUp = (event) => {
+      if (event.key === '/' || event.key === '*') {
+        stopEmergencyCountdown();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, [countdown, emergencyTriggered]);
+
+  const startEmergencyCountdown = () => {
+    setCountdown(5);
+    timerRef.current = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev === 1) {
+          clearInterval(timerRef.current);
+          triggerEmergencyStop();
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  const stopEmergencyCountdown = () => {
+    clearInterval(timerRef.current);
+    setCountdown(null);
+  };
+
+  const triggerEmergencyStop = async () => {
+    setEmergencyTriggered(true);
+    try {
+      await postError('緊急停止が発動されました。すぐに場所へ向かってください。', roomId);
+    } catch (error) {
+      console.error('Failed to report emergency stop:', error);
+    }
+  };
+
+  const abortError = () => {
+    setEmergencyTriggered(false);
+    setCountdown(null);
+  };
 
   const fetchRoomData = async () => {
     try {
@@ -93,11 +152,9 @@ const AnswerWindow = () => {
         const currentKeyboardType = await window.globalVariableHandler.getSharedData(
           'currentQuestionAnswerType'
         );
-        console.log('called!', currentKeyboardType);
         setKeyboardMode(currentKeyboardType);
       }
       if (functionName === 'waitForStaffControl') {
-        console.log('called: waitForStaffControl');
         setKeyboardMode(null);
       }
     } catch (error) {
@@ -148,7 +205,7 @@ const AnswerWindow = () => {
     if (result === 'Correct') {
       if (currentLastQuestionToClear === 1) {
         await window.globalVariableHandler.setSharedData('isCleared', true);
-        window.remoteFunctionHandler.executeFunction('InstructionWindow', `playEnding`);
+        window.remoteFunctionHandler.executeFunction('InstructionWindow', 'playEnding');
       } else {
         await window.globalVariableHandler.setSharedData(
           'currentLastQuestionToClear',
@@ -158,18 +215,18 @@ const AnswerWindow = () => {
           'currentLastQuestion',
           currentLastQuestion - 1
         );
-        window.remoteFunctionHandler.executeFunction('InstructionWindow', `PlayCorrectMovie`);
+        window.remoteFunctionHandler.executeFunction('InstructionWindow', 'PlayCorrectMovie');
       }
     } else {
       if (currentLastQuestion === currentLastQuestionToClear) {
         await window.globalVariableHandler.setSharedData('isCleared', false);
-        window.remoteFunctionHandler.executeFunction('InstructionWindow', `playEnding`);
+        window.remoteFunctionHandler.executeFunction('InstructionWindow', 'playEnding');
       } else {
         await window.globalVariableHandler.setSharedData(
           'currentLastQuestion',
           currentLastQuestion - 1
         );
-        window.remoteFunctionHandler.executeFunction('InstructionWindow', `PlayWrongMovie`);
+        window.remoteFunctionHandler.executeFunction('InstructionWindow', 'PlayWrongMovie');
       }
     }
   };
@@ -240,6 +297,46 @@ const AnswerWindow = () => {
         )}
 
         {keyboardMode === 'blank' && <Flex height="100%" width="100%" bg="white" />}
+
+        {countdown !== null && emergencyTriggered === false && (
+          <Flex
+            position="fixed"
+            top="0"
+            left="0"
+            width="100vw"
+            height="100vh"
+            bg="rgba(255, 0, 0, 0.5)"
+            alignItems="center"
+            justifyContent="center"
+            zIndex="1000"
+          >
+            <Text fontSize="5xl" color="white">
+              緊急停止まで: {countdown}秒
+            </Text>
+          </Flex>
+        )}
+
+        {emergencyTriggered && (
+          <Flex
+            position="fixed"
+            top="0"
+            left="0"
+            width="100vw"
+            height="100vh"
+            bg="rgba(255, 0, 0, 0.5)"
+            alignItems="center"
+            justifyContent="center"
+            zIndex="1000"
+          >
+            <Text fontSize="5xl" color="white">
+              緊急停止しました。
+              <br />
+              スタッフの到着をお待ちください。
+            </Text>
+            <br />
+            <Button onClick={abortError}>解決</Button>
+          </Flex>
+        )}
       </Flex>
     </ChakraProvider>
   );
