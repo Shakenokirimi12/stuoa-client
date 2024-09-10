@@ -65,13 +65,21 @@ contextBridge.exposeInMainWorld('globalVariableHandler', {
   },
   resetSharedData: async () => {
     await ipcRenderer.invoke('reset-shared-data')
-
   }
 })
 
 contextBridge.exposeInMainWorld('remoteFunctionHandler', {
-  executeFunction: (targetWindow, functionName) => {
-    ipcRenderer.send('execute-function', { targetWindow, functionName })
+  executeFunction: async (targetWindow, functionName) => {
+    return new Promise((resolve, reject) => {
+      ipcRenderer.once('function-execution-result', (event, result) => {
+        if (result.success) {
+          resolve(result.data)
+        } else {
+          reject(result.error)
+        }
+      })
+      ipcRenderer.send('execute-function', { targetWindow, functionName })
+    })
   },
   onInvokeFunction: (callback) => {
     ipcRenderer.on('invoke-function', (event, { functionName }) => {

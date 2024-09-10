@@ -124,6 +124,29 @@ const ControlPanel = () => {
                 colorScheme="teal"
                 size="lg"
                 variant="solid"
+                onClick={openQuestionWindow}
+                isDisabled={!isConnected}
+                w={'500px'}
+              >
+                Open Question Window
+              </Button>
+              <Select
+                value={questionWindowDisplay}
+                onChange={(e) => setQuestionWindowDisplay(e.target.value)}
+                disabled={!isConnected}
+              >
+                <option value="Display 1">Display 1</option>
+                <option value="Display 2">Display 2</option>
+                <option value="Display 3">Display 3</option>
+                <option value="Display 4">Display 4</option>
+              </Select>
+            </HStack>
+
+            <HStack w="full">
+              <Button
+                colorScheme="teal"
+                size="lg"
+                variant="solid"
                 onClick={openAnswerWindow}
                 isDisabled={!isConnected}
                 w={'500px'}
@@ -142,28 +165,6 @@ const ControlPanel = () => {
               </Select>
             </HStack>
 
-            <HStack w="full">
-              <Button
-                colorScheme="teal"
-                size="lg"
-                variant="solid"
-                onClick={openQuestionWindow}
-                isDisabled={!isConnected}
-                w={'500px'}
-              >
-                Open Question Window
-              </Button>
-              <Select
-                value={questionWindowDisplay}
-                onChange={(e) => setQuestionWindowDisplay(e.target.value)}
-                disabled={!isConnected}
-              >
-                <option value="Display 1">Display 1</option>
-                <option value="Display 2">Display 2</option>
-                <option value="Display 3">Display 3</option>
-                <option value="Display 4">Display 4</option>
-              </Select>
-            </HStack>
             <Button
               colorScheme="orange"
               size="lg"

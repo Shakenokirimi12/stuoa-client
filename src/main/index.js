@@ -144,7 +144,7 @@ app.whenReady().then(() => {
 
       const urlToLoad = is.dev && process.env['ELECTRON_RENDERER_URL']
         ? new URL('#connection_checker', process.env['ELECTRON_RENDERER_URL']).toString()
-          : `file://${resolve(__dirname, process.platform === 'win32' ? '..\\renderer\\index.html#connection_checker' : '../renderer/index.html#/connection_checker')}`
+        : `file://${resolve(__dirname, process.platform === 'win32' ? '..\\renderer\\index.html#connection_checker' : '../renderer/index.html#/connection_checker')}`
 
       connectionChecker.loadURL(urlToLoad)
     }
@@ -179,8 +179,7 @@ app.on('window-all-closed', () => {
   }
 })
 
-// JSONで関数実行と対象ウィンドウを指定
-ipcMain.on('execute-function', (event, { targetWindow, functionName }) => {
+ipcMain.on('execute-function', async (event, { targetWindow, functionName }) => {
   let target
 
   switch (targetWindow) {
@@ -195,12 +194,18 @@ ipcMain.on('execute-function', (event, { targetWindow, functionName }) => {
       break
     default:
       console.error('Unknown target window:', targetWindow)
+      event.reply('function-execution-result', { success: false, error: 'Unknown target window' })
       return
   }
 
   if (target && !target.isDestroyed()) {
     target.webContents.send('invoke-function', { functionName })
+
+    ipcMain.once('function-invoked', (event, result) => {
+      event.reply('function-execution-result', { success: true, data: result })
+    })
   } else {
     console.error('Target window is not available:', targetWindow)
+    event.reply('function-execution-result', { success: false, error: 'Target window not available' })
   }
 })

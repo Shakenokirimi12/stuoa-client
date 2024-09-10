@@ -15,6 +15,7 @@ const InstructionWindow = () => {
       setVideoId(`_${lastQuestionCount}_${lastToClear}`)
     }
     setShowState('instruction') // Ensure that the video is set to be shown
+    setInstructionState('lastQuestion') //? 残問題数表示を表示
   }
 
   // Handle video playback when videoId or instructionState changes
@@ -41,7 +42,7 @@ const InstructionWindow = () => {
   // Handle state change when countdown video ends
   const onCountDownEnded = async () => {
     await window.globalVariableHandler.setSharedData('isCleared', false)
-    window.remoteFunctionHandler.executeFunction('InstructionWindow', `playEnding`)
+    await window.remoteFunctionHandler.executeFunction('InstructionWindow', `playEnding`)
   }
 
   const startOrUpdateChallenge = async (isFirst) => {
@@ -51,9 +52,7 @@ const InstructionWindow = () => {
       'currentLastQuestionToClear'
     )
     updateVideo(currentLastQuestion, currentLastQuestionToClear, isFirst) //? 残問題数表示の数値を設定
-    setShowState('instruction')
-    setInstructionState('lastQuestion') //? 残問題数表示を表示
-    window.remoteFunctionHandler.executeFunction('QuestionWindow', 'showQuestion')
+    await window.remoteFunctionHandler.executeFunction('QuestionWindow', 'showQuestion')
   }
 
   const playOpening = () => {
@@ -109,10 +108,6 @@ const InstructionWindow = () => {
       playEnding()
     } else if (functionName === 'playExitInstruction') {
       playExitInstruction()
-      setInstructionState('icon')
-      window.remoteFunctionHandler.executeFunction('QuestionWindow', 'clearWindow')
-      window.remoteFunctionHandler.executeFunction('AnswerWindow', 'waitForStaffControl')
-      window.globalVariableHandler.resetSharedData()
     }
   })
   return (
@@ -199,7 +194,7 @@ const InstructionWindow = () => {
               width="100%"
               height="100%"
               autoPlay
-              onEnded={() => startOrUpdateChallenge(true)}
+              onEnded={async () => await startOrUpdateChallenge(true)}
             >
               <source src={`http://${serverIP}/api/client/getFile/opening.mp4`} type="video/mp4" />
               Your browser does not support the video tag.
@@ -236,7 +231,15 @@ const InstructionWindow = () => {
                 width="100%"
                 height="100%"
                 autoPlay
-                onEnded={() => setShowState('icon')}
+                onEnded={async () => {
+                  setInstructionState('icon')
+                  await window.remoteFunctionHandler.executeFunction('QuestionWindow', 'clearWindow')
+                  await window.remoteFunctionHandler.executeFunction(
+                    'AnswerWindow',
+                    'waitForStaffControl'
+                  )
+                  window.globalVariableHandler.resetSharedData()
+                }}
               >
                 <source
                   src={`http://${serverIP}/api/client/getFile/exit_${exitPosition}.mp4`}
