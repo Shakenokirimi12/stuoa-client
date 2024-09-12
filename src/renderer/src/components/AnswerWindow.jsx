@@ -89,7 +89,7 @@ const AnswerWindow = () => {
 
   const fetchRoomData = async () => {
     try {
-      const response = await fetch(`http://${serverIP}/api/client/currentroom/${roomId}`);
+      const response = await fetch(`http://${serverIP}/api/client/startGame/${roomId}`);
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }

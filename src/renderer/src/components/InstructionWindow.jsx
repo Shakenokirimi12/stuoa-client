@@ -228,7 +228,10 @@ const InstructionWindow = () => {
               autoPlay
               onEnded={() => playExitInstruction()}
             >
-              <source src={`http://${serverIP}/api/client/getFile/opening.mp4`} type="video/mp4" />
+              <source
+                src={`http://${serverIP}/api/client/getFile/ending_cleared.mp4`}
+                type="video/mp4"
+              />
               Your browser does not support the video tag.
             </video>
           </Box>
