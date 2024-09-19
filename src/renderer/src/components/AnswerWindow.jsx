@@ -94,7 +94,8 @@ const AnswerWindow = () => {
         throw new Error('Network response was not ok');
       }
       const data = await response.json();
-      if (data.length === 0) {
+      console.log(data);
+      if (data.errorCode === 'not-registered') {
         setErrorState(true);
         setErrorMessage('受付未完了エラーが発生しました。係員が参ります。しばらくお待ちください。');
         try {
@@ -106,34 +107,43 @@ const AnswerWindow = () => {
           );
         }
       } else {
-        setErrorState(false);
-        await window.globalVariableHandler.setSharedData(
-          'currentGroupDifficulty',
-          data[0].Difficulty
-        );
-        await window.globalVariableHandler.setSharedData('currentGroupName', data[0].GroupName);
-        await window.globalVariableHandler.setSharedData('currentGroupId', data[0].GroupId);
-        let questionCount, clearQuestionCount;
-        if (data[0].Difficulty == 4) {
-          questionCount = 1;
-          clearQuestionCount = 1;
-        } else if (data[0].Difficulty == 3) {
-          questionCount = 6;
-          clearQuestionCount = 5;
-        } else if (data[0].Difficulty == 2) {
-          questionCount = 7;
-          clearQuestionCount = 5;
-        } else if (data[0].Difficulty == 1) {
-          questionCount = 7;
-          clearQuestionCount = 4;
+        try {
+          setErrorState(false);
+          await window.globalVariableHandler.setSharedData(
+            'currentGroupDifficulty',
+            data.Difficulty
+          );
+          await window.globalVariableHandler.setSharedData('currentGroupName', data.GroupName);
+          await window.globalVariableHandler.setSharedData('currentGroupId', data.GroupId);
+          let questionCount, clearQuestionCount;
+          if (data.Difficulty == 4) {
+            questionCount = 1;
+            clearQuestionCount = 1;
+          } else if (data.Difficulty == 3) {
+            questionCount = 6;
+            clearQuestionCount = 5;
+          } else if (data.Difficulty == 2) {
+            questionCount = 7;
+            clearQuestionCount = 5;
+          } else if (data.Difficulty == 1) {
+            questionCount = 7;
+            clearQuestionCount = 4;
+          }
+          await window.globalVariableHandler.setSharedData('currentLastQuestion', questionCount);
+          await window.globalVariableHandler.setSharedData(
+            'currentLastQuestionToClear',
+            clearQuestionCount
+          );
+          window.remoteFunctionHandler.executeFunction('InstructionWindow', 'playOpening');
+          setKeyboardMode('blank');
+        } catch (error) {
+          console.log('Server response has unexpected error.');
+          setErrorMessage(
+            '予期しないエラーが発生しました。係員が参ります。しばらくお待ちください。<br/> error:' +
+              error
+          );
+          await postError('予期しないエラー' + error, roomId);
         }
-        await window.globalVariableHandler.setSharedData('currentLastQuestion', questionCount);
-        await window.globalVariableHandler.setSharedData(
-          'currentLastQuestionToClear',
-          clearQuestionCount
-        );
-        window.remoteFunctionHandler.executeFunction('InstructionWindow', 'playOpening');
-        setKeyboardMode('blank');
       }
     } catch (error) {
       console.error('Failed to fetch room data:', error);
@@ -156,6 +166,9 @@ const AnswerWindow = () => {
       }
       if (functionName === 'waitForStaffControl') {
         setKeyboardMode(null);
+      }
+      if (functionName === 'setToBlank') {
+        setKeyboardMode('blank');
       }
     } catch (error) {
       console.error('Error invoking function:', error);

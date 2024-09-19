@@ -113,10 +113,14 @@ const AlphabetKeyboard = ({ onSubmitComplete, onAnswerSubmitted }) => {
 
           <VStack w="15%" h="full" spacing={4}>
             <Button colorScheme="red" onClick={handleBackspace} h="full" w="full" fontSize={'50px'}>
-              1文字消す
+              1文字
+              <br />
+              消す
             </Button>
             <Button colorScheme="yellow" onClick={handleClear} h="full" w="full" fontSize={'50px'}>
-              すべて消す
+              すべて
+              <br />
+              消す
             </Button>
             <Button colorScheme="green" onClick={onOpen} h="full" w="full" fontSize={'50px'}>
               送信

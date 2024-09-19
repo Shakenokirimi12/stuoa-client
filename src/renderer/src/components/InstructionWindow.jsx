@@ -41,6 +41,8 @@ const InstructionWindow = () => {
 
   // Handle state change when countdown video ends
   const onCountDownEnded = async () => {
+    window.remoteFunctionHandler.executeFunction('QuestionWindow', 'clearWindow');
+    window.remoteFunctionHandler.executeFunction('AnswerWindow', 'setToBlank');
     await window.globalVariableHandler.setSharedData('isCleared', false);
     await window.remoteFunctionHandler.executeFunction('InstructionWindow', `playEnding`);
   };
