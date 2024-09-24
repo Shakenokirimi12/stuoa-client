@@ -6,11 +6,12 @@ import icon from '../../resources/icon.png'
 let instructionWindow = null
 let answerWindow = null
 let questionWindow = null
+let mainWindow = null
 app.commandLine.appendSwitch('disable-gpu-sandbox')
 ipcMain.setMaxListeners(2500)
 
 function createWindow() {
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 900,
     height: 670,
     show: false,
@@ -210,3 +211,12 @@ ipcMain.on('execute-function', async (event, { targetWindow, functionName }) => 
     event.reply('function-execution-result', { success: false, error: 'Target window not available' })
   }
 })
+
+ipcMain.handle('set-fullscreen', () => {
+  const allWindows = BrowserWindow.getAllWindows(); // Get all open windows
+  allWindows.forEach(window => {
+    if (window !== mainWindow && !window.isDestroyed()) {
+      window.setFullScreen(true); // Set each window to fullscreen except mainWindow
+    }
+  });
+});

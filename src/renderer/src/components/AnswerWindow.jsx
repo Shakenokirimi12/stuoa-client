@@ -13,6 +13,7 @@ const AnswerWindow = () => {
   const [serverIP, setServerIP] = useState('');
   const [countdown, setCountdown] = useState(null);
   const [emergencyTriggered, setEmergencyTriggered] = useState(false);
+  const [isFullScreen, setIsFullScreen] = useState(false);
 
   const timerRef = useRef(null);
 
@@ -244,6 +245,16 @@ const AnswerWindow = () => {
     }
   };
 
+  const setFullScreen = async () => {
+    try {
+      const result = await window.windowController.setFullScreen();
+      console.log('Full screen result:', result);
+    } catch (error) {
+      console.error('Error setting fullscreen:', error);
+    }
+    setIsFullScreen(true);
+  };
+
   return (
     <ChakraProvider>
       <Flex
@@ -262,7 +273,7 @@ const AnswerWindow = () => {
               height="100px"
               colorScheme="gray"
               borderRadius="md"
-              onClick={() => setKeyboardMode('startButton')}
+              onClick={!isFullScreen ? () => setFullScreen() : () => setKeyboardMode('startButton')}
               position="absolute"
               top="10px"
               left="10px"

@@ -88,3 +88,13 @@ contextBridge.exposeInMainWorld('remoteFunctionHandler', {
     })
   }
 })
+
+contextBridge.exposeInMainWorld('windowController', {
+  setFullScreen: async () => {
+    try {
+      return await ipcRenderer.invoke('set-fullscreen')
+    } catch (error) {
+      console.error('Failed to open question window:', error)
+    }
+  },
+})

@@ -1,7 +1,7 @@
 {
   "name": "stuoa-client",
-  "version": "3.2.0",
-  "description": "Save the UoA client.",
+  "version": "4.0.0",
+  "description": "Save the UoA client for the Sosho-sai in 2024.",
   "main": "./out/main/index.js",
   "author": "shakenokiri.me",
   "homepage": "https://electron-vite.org",
