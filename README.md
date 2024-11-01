@@ -1,34 +1,19 @@
-# stuoa-client
+# Save the UoA Client Application
+本リポジトリは、蒼翔祭2024で行われた企画「Save the UoA」のクライアントアプリケーションである。
+本アプリは、基本的に**3画面での使用を想定している**。
 
-An Electron application with React
 
-## Recommended IDE Setup
+## 技術スタック
+本アプリケーションは、以下の技術スタックによって作成されている。
+- Electron
+- Vite
+- React
+- Chakra-UI(v2)
 
-- [VSCode](https://code.visualstudio.com/) + [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) + [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
+## 基本仕様
+基本的な仕様と使用方法は、蒼翔祭実行委員会内部資料の「Save the UoA 出題アプリケーション 前日準備・当日操作マニュアル」を参照のこと。
+本アプリケーションは、ローカルにホストされたサーバー、およびhttp環境での運用を想定している。
+また、本アプリケーションで使用するすべてのアセット(動画、画像など)は、すべてサーバー側に格納されている。
+よって、サーバー側のファイルを変更することにより、一応2024年度以降も同じシステムが使用可能ではある。
+ただし、企画の新規性などの観点から、本アプリケーションを来年度以降も使用することは**全くもってお勧めしない。**。
 
-## Project Setup
-
-### Install
-
-```bash
-$ npm install
-```
-
-### Development
-
-```bash
-$ npm run dev
-```
-
-### Build
-
-```bash
-# For windows
-$ npm run build:win
-
-# For macOS
-$ npm run build:mac
-
-# For Linux
-$ npm run build:linux
-```
